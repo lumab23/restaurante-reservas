@@ -40,10 +40,12 @@ CREATE DATABASE reservas_restaurantes;
 
 - `src/main/java/com/example/reservas_restaurantes/`
   - `model/` - Classes de domínio
+  - `dao/` - Classes de acesso a dados
   - `repository/` - Interfaces de acesso a dados
   - `service/` - Lógica de negócio
+  - `controller/` - Controladores da aplicação
   - `enums/` - Enumerações do sistema
-  - `exceptions/` - Classes de exceção personalizadas
+  - `exception/` - Classes de exceção personalizadas
 
 ## Testes
 
@@ -56,8 +58,4 @@ Para executar os testes:
 
 - Nunca compartilhe ou comite o arquivo `.env`
 - Mantenha suas credenciais de banco de dados seguras
-- Use o arquivo `application.properties.example` como referência para configuração
-
-## Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes. 
+- Use o arquivo `application.properties.example` como referência para configuração 
