@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      styleClass="calendar-component"
+      spacing="10">
+    
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <DatePicker fx:id="datePicker" 
+                styleClass="calendar-picker"
+                promptText="Selecione uma data"/>
+    
+    <Label fx:id="lblInfo" 
+           styleClass="calendar-info"
+           wrapText="true"/>
+</VBox> 

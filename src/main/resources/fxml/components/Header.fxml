@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      styleClass="header"
+      spacing="10">
+    
+    <padding>
+        <Insets top="10" right="20" bottom="10" left="20"/>
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <ImageView fitWidth="120" fitHeight="40" preserveRatio="true">
+            <Image url="@../images/logo.png"/>
+        </ImageView>
+        <Text fx:id="txtTitulo" styleClass="header-title"/>
+    </HBox>
+
+    <HBox fx:id="navMenu" 
+          styleClass="nav-menu" 
+          alignment="CENTER" 
+          spacing="20">
+        
+        <Button fx:id="btnReservar" 
+                text="Reservar Mesa" 
+                styleClass="nav-button"/>
+        
+        <Button fx:id="btnCardapio" 
+                text="Cardápio Digital" 
+                styleClass="nav-button"/>
+        
+        <Button fx:id="btnAvaliacao" 
+                text="Avalie-nos" 
+                styleClass="nav-button"/>
+        
+        <Button fx:id="btnLocalizacao" 
+                text="Localização" 
+                styleClass="nav-button"/>
+    </HBox>
+</VBox> 

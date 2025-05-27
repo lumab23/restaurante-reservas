@@ -1,0 +1,245 @@
+/* Estilos gerais */
+.root {
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+    -fx-background-color: #ffffff;
+}
+
+/* Header */
+.header {
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 2);
+}
+
+.nav-menu {
+    -fx-padding: 15px;
+    -fx-background-color: #ffffff;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #333333;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+}
+
+.nav-button:hover {
+    -fx-text-fill: #e74c3c;
+    -fx-underline: true;
+}
+
+/* Conteúdo */
+.content {
+    -fx-padding: 40px;
+    -fx-spacing: 30px;
+    -fx-alignment: center;
+}
+
+.title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-fill: #333333;
+    -fx-text-alignment: center;
+}
+
+.section-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-fill: #333333;
+}
+
+/* Seções */
+.horario-section, .localizacao-section {
+    -fx-padding: 20px;
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 1);
+}
+
+/* Botões */
+.map-button {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.map-button:hover {
+    -fx-background-color: #c0392b;
+}
+
+/* Footer */
+.footer {
+    -fx-padding: 20px;
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #e9ecef;
+    -fx-border-width: 1px 0 0 0;
+}
+
+.footer Text {
+    -fx-fill: #6c757d;
+    -fx-font-size: 12px;
+}
+
+/* Estilos para o fluxo de reserva */
+.reserva-flow {
+    -fx-padding: 30px;
+    -fx-spacing: 20px;
+    -fx-background-color: #ffffff;
+}
+
+.reserva-step {
+    -fx-padding: 20px;
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 1);
+}
+
+.step-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-fill: #333333;
+}
+
+.form-field {
+    -fx-padding: 10px;
+}
+
+.form-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+}
+
+.form-input {
+    -fx-padding: 8px;
+    -fx-background-radius: 4px;
+    -fx-border-color: #ced4da;
+    -fx-border-radius: 4px;
+}
+
+.form-input:focused {
+    -fx-border-color: #e74c3c;
+}
+
+/* Botões de navegação do fluxo */
+.flow-button {
+    -fx-padding: 10px 20px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.flow-button.primary {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+}
+
+.flow-button.secondary {
+    -fx-background-color: #6c757d;
+    -fx-text-fill: white;
+}
+
+.flow-button:hover {
+    -fx-opacity: 0.9;
+}
+
+/* Estilos para os botões de horário */
+.horarios-grid {
+    -fx-padding: 10px;
+    -fx-spacing: 10px;
+    -fx-alignment: center;
+}
+
+.horario-button {
+    -fx-min-width: 100px;
+    -fx-padding: 10px 20px;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e74c3c;
+    -fx-border-radius: 5px;
+    -fx-text-fill: #e74c3c;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.horario-button:selected {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+}
+
+.horario-button:hover {
+    -fx-background-color: #f8d7da;
+}
+
+.horario-button:selected:hover {
+    -fx-background-color: #c0392b;
+}
+
+.horario-button:disabled {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #ced4da;
+    -fx-text-fill: #6c757d;
+    -fx-cursor: default;
+}
+
+/* Estilos para seleção de quantidade */
+.qtd-button {
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-background-radius: 20px;
+    -fx-cursor: hand;
+}
+
+.qtd-button:hover {
+    -fx-background-color: #c0392b;
+}
+
+.qtd-button:disabled {
+    -fx-background-color: #ced4da;
+    -fx-cursor: default;
+}
+
+.qtd-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-min-width: 40px;
+    -fx-alignment: center;
+}
+
+.payment-method-selector {
+    -fx-background-color: white;
+    -fx-background-radius: 5;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);
+}
+
+.payment-method-info {
+    -fx-font-size: 14px;
+    -fx-text-fill: #666666;
+    -fx-padding: 0 0 10 0;
+}
+
+.payment-method-button {
+    -fx-background-color: white;
+    -fx-border-color: #dddddd;
+    -fx-border-radius: 5;
+    -fx-padding: 15;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+
+.payment-method-button:hover {
+    -fx-background-color: #f5f5f5;
+    -fx-border-color: #cccccc;
+}
+
+.payment-method-button:selected {
+    -fx-background-color: #e3f2fd;
+    -fx-border-color: #2196f3;
+    -fx-text-fill: #1976d2;
+} 
