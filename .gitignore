@@ -38,7 +38,4 @@ application-prod.properties
 *.env
 .env
 
-### Project Specific ###
-src/main/java/com/example/reservas_restaurantes/ui/
-src/main/java/com/example/reservas_restaurantes/SwingAppInitializer.java
-src/test/java/com/example/reservas_restaurantes/model/
+src/main/resources/application-secret.properties
