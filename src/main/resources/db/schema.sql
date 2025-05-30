@@ -41,32 +41,6 @@ CREATE TABLE IF NOT EXISTS Reserva (
     FOREIGN KEY (id_mesa) REFERENCES Mesa(id_mesa) ON DELETE CASCADE
 );
 
--- Criação da tabela Cardapio
-CREATE TABLE IF NOT EXISTS Cardapio (
-    id_cardapio INT PRIMARY KEY AUTO_INCREMENT,
-    nome VARCHAR(100) NOT NULL,
-    descricao TEXT,
-    preco DECIMAL(10,2) NOT NULL
-);
-
--- Criação da tabela Pedido
-CREATE TABLE IF NOT EXISTS Pedido (
-    id_pedido INT PRIMARY KEY AUTO_INCREMENT,
-    id_reserva INT NOT NULL,
-    dataHora DATETIME NOT NULL,
-    FOREIGN KEY (id_reserva) REFERENCES Reserva(id_reserva) ON DELETE CASCADE
-);
-
--- Criação da tabela ItemPedido
-CREATE TABLE IF NOT EXISTS ItemPedido (
-    id_item_pedido INT PRIMARY KEY AUTO_INCREMENT,
-    id_pedido INT NOT NULL,
-    id_cardapio INT NOT NULL,
-    quantidade INT NOT NULL,
-    FOREIGN KEY (id_pedido) REFERENCES Pedido(id_pedido) ON DELETE CASCADE,
-    FOREIGN KEY (id_cardapio) REFERENCES Cardapio(id_cardapio)
-);
-
 -- Criação da tabela Pagamento
 CREATE TABLE IF NOT EXISTS Pagamento (
     id_pagamento INT PRIMARY KEY AUTO_INCREMENT,

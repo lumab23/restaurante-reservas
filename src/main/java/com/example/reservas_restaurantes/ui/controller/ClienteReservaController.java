@@ -2,9 +2,15 @@ package com.example.reservas_restaurantes.ui.controller;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import com.example.reservas_restaurantes.enums.StatusReserva;
@@ -16,9 +22,12 @@ import com.example.reservas_restaurantes.service.ClienteService;
 import com.example.reservas_restaurantes.service.MesaService;
 import com.example.reservas_restaurantes.service.ReservaService;
 
+import java.io.IOException;
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -265,16 +274,70 @@ public class ClienteReservaController {
     }
     
     private void abrirTelaPagamento(Reserva reserva) {
-        // Implementar abertura da tela de pagamento
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Pagamento");
         alert.setHeaderText("Deseja realizar o pagamento agora?");
         alert.setContentText("Você pode pagar antecipadamente ou no dia da reserva.");
         
+        ButtonType btnPagarAgora = new ButtonType("Pagar Agora");
+        ButtonType btnDepois = new ButtonType("Pagar Depois");
+        ButtonType btnCancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
+        
+        alert.getButtonTypes().setAll(btnPagarAgora, btnDepois, btnCancelar);
+        
         alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                // TODO: Implementar tela de pagamento
-                mostrarAlerta("Info", "Tela de pagamento será implementada em breve.", Alert.AlertType.INFORMATION);
+            if (response == btnPagarAgora) {
+                try {
+                    // Usar ClassPathResource do Spring para carregar o FXML
+                    ClassPathResource resource = new ClassPathResource("fxml/pagamento.fxml");
+                    URL resourceUrl;
+                    try {
+                        resourceUrl = resource.getURL();
+                        System.out.println("Tentando carregar FXML de: " + resourceUrl);
+                    } catch (IOException e) {
+                        throw new IOException("Não foi possível acessar o arquivo pagamento.fxml: " + e.getMessage());
+                    }
+                    
+                    FXMLLoader loader = new FXMLLoader(resourceUrl);
+                    Parent root = loader.load();
+                    
+                    PagamentoUIController pagamentoController = loader.getController();
+                    if (pagamentoController == null) {
+                        throw new IOException("Não foi possível criar o controller da tela de pagamento");
+                    }
+                    
+                    pagamentoController.setReserva(reserva);
+                    pagamentoController.setMainController(mainController);
+                    
+                    Scene scene = new Scene(root);
+                    Stage stage = new Stage();
+                    stage.setTitle("Pagamento da Reserva");
+                    stage.setScene(scene);
+                    stage.initModality(Modality.APPLICATION_MODAL);
+                    stage.showAndWait();
+                } catch (IOException e) {
+                    System.err.println("Erro detalhado ao abrir tela de pagamento:");
+                    e.printStackTrace();
+                    String resourcePath;
+                    try {
+                        resourcePath = new ClassPathResource("fxml/pagamento.fxml").getURL().toString();
+                    } catch (IOException ex) {
+                        resourcePath = "não foi possível determinar o caminho";
+                    }
+                    mostrarAlerta("Erro", 
+                        "Erro ao abrir tela de pagamento: " + e.getMessage() + "\n" +
+                        "Caminho do arquivo: " + resourcePath,
+                        Alert.AlertType.ERROR);
+                }
+            } else if (response == btnDepois) {
+                mostrarAlerta("Informação", 
+                    "Você poderá realizar o pagamento no dia da reserva.\n" +
+                    "Data: " + reserva.getDataHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "\n" +
+                    "Horário: " + reserva.getDataHora().format(DateTimeFormatter.ofPattern("HH:mm")),
+                    Alert.AlertType.INFORMATION);
+                voltarInicio();
+            } else {
+                voltarInicio();
             }
         });
     }

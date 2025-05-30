@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.reservas_restaurantes.ui.controller.PagamentoUIController"
+      spacing="10" styleClass="container">
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Text styleClass="title" text="Pagamento da Reserva"/>
+    
+    <VBox fx:id="resumoReservaBox" spacing="5" styleClass="info-box">
+        <Text fx:id="resumoReservaText" styleClass="subtitle"/>
+        <Text fx:id="valorTotalText" styleClass="subtitle"/>
+    </VBox>
+
+    <ToggleGroup fx:id="metodoPagamento"/>
+
+    <TitledPane text="Método de Pagamento" expanded="true">
+        <VBox spacing="10">
+            <RadioButton fx:id="cartaoRadio" text="Cartão de Crédito" selected="true" toggleGroup="$metodoPagamento"/>
+            <RadioButton fx:id="pixRadio" text="PIX" toggleGroup="$metodoPagamento"/>
+        </VBox>
+    </TitledPane>
+
+    <VBox fx:id="cartaoBox" spacing="10">
+        <TextField fx:id="numeroCartaoField" promptText="Número do Cartão" styleClass="card-input"/>
+        <TextField fx:id="titularField" promptText="Nome do Titular" styleClass="card-input"/>
+        <HBox spacing="10">
+            <TextField fx:id="validadeField" promptText="MM/AA" styleClass="card-input" HBox.hgrow="ALWAYS"/>
+            <TextField fx:id="cvvField" promptText="CVV" styleClass="card-input" HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </VBox>
+
+    <VBox fx:id="pixBox" spacing="10" visible="false">
+        <Text styleClass="info-text" text="Escaneie o QR Code ou copie a chave PIX abaixo:"/>
+        <ImageView fx:id="qrCodeImage" fitWidth="200" fitHeight="200" preserveRatio="true"/>
+        <TextField fx:id="chavePixField" promptText="Chave PIX" editable="false" styleClass="pix-input"/>
+        <Button text="Copiar Chave PIX" onAction="#copiarChavePix" styleClass="button-secondary"/>
+    </VBox>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="Cancelar" onAction="#cancelarPagamento" styleClass="button-secondary"/>
+        <Button text="Confirmar Pagamento" onAction="#confirmarPagamento" styleClass="button-primary"/>
+    </HBox>
+
+    <stylesheets>
+        <URL value="@../css/styles.css"/>
+    </stylesheets>
+</VBox> 
