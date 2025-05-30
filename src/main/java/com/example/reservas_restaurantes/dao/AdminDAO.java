@@ -119,11 +119,18 @@ public class AdminDAO implements AdminRepository {
 
     @Override
     public boolean autenticar(String email, String senha) throws SQLException {
+        System.out.println("Tentando autenticar admin com email: " + email);
         Optional<Admin> adminOpt = buscarPorEmail(email);
         if (adminOpt.isPresent()) {
             Admin admin = adminOpt.get();
-            return passwordEncoder.matches(senha, admin.getSenha());
+            System.out.println("Admin encontrado: " + admin.getNome());
+            System.out.println("Senha fornecida: " + senha);
+            System.out.println("Senha armazenada (hash): " + admin.getSenha());
+            boolean matches = passwordEncoder.matches(senha, admin.getSenha());
+            System.out.println("Resultado da comparação: " + matches);
+            return matches;
         }
+        System.out.println("Admin não encontrado com email: " + email);
         return false;
     }
 

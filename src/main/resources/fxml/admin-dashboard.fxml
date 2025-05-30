@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.reservas_restaurantes.ui.controller.AdminDashboardController"
+      spacing="20" styleClass="main-container">
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <Label text="Painel Administrativo" styleClass="title-label"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnLogout" text="Sair" styleClass="secondary-button"/>
+    </HBox>
+
+    <TabPane fx:id="tabPane" VBox.vgrow="ALWAYS">
+        <!-- Aba Reservas -->
+        <Tab text="Reservas" closable="false">
+            <VBox spacing="10">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <DatePicker fx:id="dpFiltroData"/>
+                    <Button fx:id="btnFiltrarReservas" text="Filtrar" styleClass="primary-button"/>
+                    <Button fx:id="btnAtualizarReservas" text="Atualizar" styleClass="secondary-button"/>
+                </HBox>
+                
+                <TableView fx:id="tableReservas" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colIdReserva" text="ID" prefWidth="50"/>
+                        <TableColumn fx:id="colIdClienteReserva" text="ID Cliente" prefWidth="100"/>
+                        <TableColumn fx:id="colIdMesaReserva" text="ID Mesa" prefWidth="100"/>
+                        <TableColumn fx:id="colDataHora" text="Data/Hora" prefWidth="150"/>
+                        <TableColumn fx:id="colNumPessoas" text="Pessoas" prefWidth="100"/>
+                        <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </Tab>
+
+        <!-- Aba Clientes -->
+        <Tab text="Clientes" closable="false">
+            <VBox spacing="10">
+                <HBox alignment="CENTER_RIGHT">
+                    <Button fx:id="btnAtualizarClientes" text="Atualizar" styleClass="secondary-button"/>
+                </HBox>
+                
+                <TableView fx:id="tableClientes" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colIdClienteCliente" text="ID" prefWidth="50"/>
+                        <TableColumn fx:id="colNomeCliente" text="Nome" prefWidth="200"/>
+                        <TableColumn fx:id="colEmailCliente" text="Email" prefWidth="200"/>
+                        <TableColumn fx:id="colTelefoneCliente" text="Telefone" prefWidth="150"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </Tab>
+
+        <!-- Aba Mesas -->
+        <Tab text="Mesas" closable="false">
+            <VBox spacing="10">
+                <HBox alignment="CENTER_RIGHT">
+                    <Button fx:id="btnAtualizarMesas" text="Atualizar" styleClass="secondary-button"/>
+                </HBox>
+                
+                <TableView fx:id="tableMesas" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colIdMesaMesa" text="ID" prefWidth="50"/>
+                        <TableColumn fx:id="colCapacidade" text="Capacidade" prefWidth="100"/>
+                        <TableColumn fx:id="colLocalizacao" text="Localização" prefWidth="200"/>
+                        <TableColumn fx:id="colStatusMesa" text="Status" prefWidth="100"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </Tab>
+    </TabPane>
+</VBox> 

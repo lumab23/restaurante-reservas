@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox fx:id="mainContainer" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.reservas_restaurantes.ui.controller.MainController"
+      spacing="20" alignment="CENTER" styleClass="main-container">
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label fx:id="lblTitulo" styleClass="title-label"/>
+    
+    <HBox spacing="20" alignment="CENTER">
+        <Button fx:id="btnNovaReserva" text="Nova Reserva" styleClass="primary-button"/>
+        <Button fx:id="btnAdminLogin" text="Login Admin" styleClass="secondary-button"/>
+    </HBox>
+    
+</VBox> 

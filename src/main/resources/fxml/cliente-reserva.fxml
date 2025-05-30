@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox fx:id="containerReserva" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.reservas_restaurantes.ui.controller.ClienteReservaController"
+      spacing="20" styleClass="main-container">
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Nova Reserva" styleClass="title-label"/>
+    
+    <GridPane vgap="15" hgap="10">
+        <!-- Dados do Cliente -->
+        <Label text="Dados do Cliente" styleClass="section-label" 
+               GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2"/>
+        
+        <Label text="Nome:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <TextField fx:id="txtNome" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        
+        <Label text="Telefone:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <TextField fx:id="txtTelefone" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        
+        <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <TextField fx:id="txtEmail" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        
+        <Label text="Data de Nascimento:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+        <DatePicker fx:id="dpDataNascimento" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        
+        <!-- Dados da Reserva -->
+        <Label text="Dados da Reserva" styleClass="section-label" 
+               GridPane.columnIndex="0" GridPane.rowIndex="5" GridPane.columnSpan="2"/>
+        
+        <Label text="Data:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+        <DatePicker fx:id="dpDataReserva" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+        
+        <Label text="Horário:" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+        <ComboBox fx:id="cbHorario" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+        
+        <Label text="Número de Pessoas:" GridPane.columnIndex="0" GridPane.rowIndex="8"/>
+        <Spinner fx:id="spnNumPessoas" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
+        
+        <Label text="Ocasiao:" GridPane.columnIndex="0" GridPane.rowIndex="9"/>
+        <ComboBox fx:id="cbOcasiao" GridPane.columnIndex="1" GridPane.rowIndex="9"/>
+        
+        <Label text="Mesa:" GridPane.columnIndex="0" GridPane.rowIndex="10"/>
+        <ComboBox fx:id="cbMesa" GridPane.columnIndex="1" GridPane.rowIndex="10"/>
+        
+        <Label text="Observação:" GridPane.columnIndex="0" GridPane.rowIndex="11"/>
+        <TextArea fx:id="txtObservacao" GridPane.columnIndex="1" GridPane.rowIndex="11"/>
+    </GridPane>
+    
+    <HBox spacing="20" alignment="CENTER">
+        <Button fx:id="btnConfirmarReserva" text="Confirmar Reserva" styleClass="primary-button"/>
+        <Button fx:id="btnVoltar" text="Voltar" styleClass="secondary-button"/>
+    </HBox>
+    
+</VBox> 
