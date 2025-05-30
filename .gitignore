@@ -38,4 +38,24 @@ application-prod.properties
 *.env
 .env
 
-src/main/resources/application-secret.properties
+# Arquivos de configuração com credenciais
+src/main/resources/application.properties
+
+# Arquivos compilados
+target/
+*.class
+
+# Arquivos de IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Logs
+*.log
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
