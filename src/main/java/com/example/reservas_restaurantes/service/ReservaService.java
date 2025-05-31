@@ -174,11 +174,59 @@ public class ReservaService {
         }
     }
 
+    /**
+     * Atualiza o status de todas as mesas baseado nas reservas ativas.
+     * Mesas sem reservas ativas são marcadas como DISPONIVEL.
+     */
+    @Transactional
+    public void atualizarStatusTodasMesas() {
+        try {
+            System.out.println("Iniciando atualização de status de todas as mesas...");
+            List<Mesa> todasMesas = mesaRepository.buscarTodos();
+            LocalDateTime agora = LocalDateTime.now();
+            LocalDateTime inicioPeriodo = agora.minusHours(DURACAO_PADRAO_RESERVA_HORAS);
+            // Definir um período de 30 dias para frente para verificar reservas ativas
+            LocalDateTime fimPeriodo = agora.plusDays(30);
+            
+            for (Mesa mesa : todasMesas) {
+                try {
+                    List<Reserva> reservasAtivas = reservaRepository
+                        .buscarPorMesaEPeriodo(mesa.getIdMesa(), inicioPeriodo, fimPeriodo)
+                        .stream()
+                        .filter(r -> r.getStatusReserva() != StatusReserva.CANCELADA)
+                        .collect(Collectors.toList());
+
+                    if (reservasAtivas.isEmpty()) {
+                        if (mesa.getStatusMesa() != StatusMesa.DISPONIVEL) {
+                            mesaRepository.atualizarStatus(mesa.getIdMesa(), StatusMesa.DISPONIVEL);
+                            System.out.println("Mesa ID " + mesa.getIdMesa() + " atualizada para DISPONIVEL (sem reservas ativas)");
+                        }
+                    } else {
+                        // Se tem reservas ativas, mantém como RESERVADA
+                        if (mesa.getStatusMesa() != StatusMesa.RESERVADA) {
+                            mesaRepository.atualizarStatus(mesa.getIdMesa(), StatusMesa.RESERVADA);
+                            System.out.println("Mesa ID " + mesa.getIdMesa() + " atualizada para RESERVADA (com " + reservasAtivas.size() + " reservas ativas)");
+                        }
+                    }
+                } catch (SQLException e) {
+                    System.err.println("Erro ao atualizar status da mesa ID " + mesa.getIdMesa() + ": " + e.getMessage());
+                }
+            }
+            System.out.println("Atualização de status de todas as mesas concluída.");
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar mesas para atualização de status: " + e.getMessage());
+        }
+    }
+
     public List<Reserva> listarTodasReservas() {
         try {
             System.out.println("ReservaService: Iniciando busca de todas as reservas");
             List<Reserva> reservas = reservaRepository.buscarTodos();
             System.out.println("ReservaService: Encontradas " + reservas.size() + " reservas");
+            
+            // Atualiza o status das mesas após listar as reservas
+            atualizarStatusTodasMesas();
+            
             return reservas;
         } catch (SQLException e) {
             System.err.println("Erro detalhado ao listar todas as reservas: " + e.getMessage());
@@ -272,15 +320,40 @@ public class ReservaService {
     }
 
     // deletar reserva
-    @Transactional
+    @Transactional(rollbackFor = {SQLException.class, BusinessRuleException.class, EntidadeNaoEncontradaException.class})
     public void deletarReserva(int idReserva) throws BusinessRuleException, EntidadeNaoEncontradaException {
-        // verificar se a reserva existe
-        buscarReservaPorId(idReserva);
-
+        System.out.println("Iniciando deleção da reserva ID: " + idReserva);
+        
+        // Buscar a reserva antes de deletar para ter acesso aos dados
+        Reserva reserva = buscarReservaPorId(idReserva);
+        int idMesa = reserva.getIdMesa();
+        System.out.println("Reserva encontrada - Mesa ID: " + idMesa);
+        
         try {
+            // Deletar a reserva
             reservaRepository.deletar(idReserva);
-        } catch (Exception e) {
-            throw new BusinessRuleException("erro de banco de dados ao deletar a reserva: " + e.getMessage(), e);
+            System.out.println("Reserva ID " + idReserva + " deletada com sucesso");
+
+            // Atualizar status de todas as mesas após deletar a reserva
+            atualizarStatusTodasMesas();
+
+            // Verificar se o cliente tem outras reservas
+            List<Reserva> outrasReservasCliente = reservaRepository.buscarPorCliente(reserva.getIdCliente())
+                .stream()
+                .filter(r -> r.getIdReserva() != idReserva)
+                .collect(Collectors.toList());
+
+            if (outrasReservasCliente.isEmpty()) {
+                System.out.println("Cliente ID " + reserva.getIdCliente() + " não possui outras reservas. Deletando cliente...");
+                clienteRepository.deletar(reserva.getIdCliente());
+                System.out.println("Cliente ID " + reserva.getIdCliente() + " deletado com sucesso.");
+            } else {
+                System.out.println("Cliente ID " + reserva.getIdCliente() + " possui " + outrasReservasCliente.size() + " outras reservas. Mantendo cliente.");
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao deletar reserva: " + e.getMessage());
+            throw new BusinessRuleException("Erro ao deletar reserva: " + e.getMessage(), e);
         }
     }
 }
