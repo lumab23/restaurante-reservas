@@ -33,9 +33,15 @@ public class AdminDAO implements AdminRepository {
         String sql = "INSERT INTO admin (nome, email, senha, cargo, ativo) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            
+            // Criptografar a senha antes de salvar
+            String senhaCriptografada = passwordEncoder.encode(admin.getSenha());
+            System.out.println("Salvando admin com senha original: " + admin.getSenha());
+            System.out.println("Senha criptografada: " + senhaCriptografada);
+            
             stmt.setString(1, admin.getNome());
             stmt.setString(2, admin.getEmail());
-            stmt.setString(3, passwordEncoder.encode(admin.getSenha()));
+            stmt.setString(3, senhaCriptografada);
             stmt.setString(4, admin.getCargo());
             stmt.setBoolean(5, admin.isAtivo());
             stmt.executeUpdate();
@@ -65,16 +71,19 @@ public class AdminDAO implements AdminRepository {
 
     @Override
     public Optional<Admin> buscarPorEmail(String email) throws SQLException {
-        String sql = "SELECT * FROM admin WHERE email = ?";
+        String sql = "SELECT * FROM admin WHERE email = ? AND ativo = true";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, email);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(mapAdmin(rs));
+                    Admin admin = mapAdmin(rs);
+                    System.out.println("Admin encontrado no banco: " + admin.getNome() + " - Email: " + admin.getEmail());
+                    return Optional.of(admin);
                 }
             }
         }
+        System.out.println("Nenhum admin encontrado com email: " + email);
         return Optional.empty();
     }
 
@@ -97,9 +106,14 @@ public class AdminDAO implements AdminRepository {
         String sql = "UPDATE admin SET nome = ?, email = ?, senha = ?, cargo = ?, ativo = ? WHERE id_admin = ?";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            // Criptografar a senha se ela foi alterada
+            String senhaCriptografada = admin.getSenha().startsWith("$2a$") ? 
+                admin.getSenha() : passwordEncoder.encode(admin.getSenha());
+            
             stmt.setString(1, admin.getNome());
             stmt.setString(2, admin.getEmail());
-            stmt.setString(3, passwordEncoder.encode(admin.getSenha()));
+            stmt.setString(3, senhaCriptografada);
             stmt.setString(4, admin.getCargo());
             stmt.setBoolean(5, admin.isAtivo());
             stmt.setInt(6, admin.getIdAdmin());
@@ -119,19 +133,49 @@ public class AdminDAO implements AdminRepository {
 
     @Override
     public boolean autenticar(String email, String senha) throws SQLException {
-        System.out.println("Tentando autenticar admin com email: " + email);
+        System.out.println("=== INÍCIO DA AUTENTICAÇÃO ===");
+        System.out.println("Email fornecido: '" + email + "'");
+        System.out.println("Senha fornecida: '" + senha + "'");
+        
+        // Primeiro, vamos verificar se o admin existe
         Optional<Admin> adminOpt = buscarPorEmail(email);
-        if (adminOpt.isPresent()) {
-            Admin admin = adminOpt.get();
-            System.out.println("Admin encontrado: " + admin.getNome());
-            System.out.println("Senha fornecida: " + senha);
-            System.out.println("Senha armazenada (hash): " + admin.getSenha());
-            boolean matches = passwordEncoder.matches(senha, admin.getSenha());
-            System.out.println("Resultado da comparação: " + matches);
-            return matches;
+        
+        if (adminOpt.isEmpty()) {
+            System.out.println("ERRO: Admin não encontrado com email: " + email);
+            
+            // Debug: Vamos listar todos os emails no banco
+            System.out.println("Listando todos os admins no banco:");
+            List<Admin> todosAdmins = buscarTodos();
+            for (Admin admin : todosAdmins) {
+                System.out.println("- Email: '" + admin.getEmail() + "' | Nome: " + admin.getNome() + " | Ativo: " + admin.isAtivo());
+            }
+            return false;
         }
-        System.out.println("Admin não encontrado com email: " + email);
-        return false;
+        
+        Admin admin = adminOpt.get();
+        System.out.println("Admin encontrado: " + admin.getNome());
+        System.out.println("Senha hash no banco: " + admin.getSenha());
+        
+        // Verificar se o admin está ativo
+        if (!admin.isAtivo()) {
+            System.out.println("ERRO: Admin está inativo");
+            return false;
+        }
+        
+        // Comparar as senhas
+        boolean senhaCorreta = passwordEncoder.matches(senha, admin.getSenha());
+        System.out.println("Resultado da comparação de senha: " + senhaCorreta);
+        
+        // Debug adicional
+        if (!senhaCorreta) {
+            System.out.println("TESTE: Gerando novo hash para a senha fornecida:");
+            String novoHash = passwordEncoder.encode(senha);
+            System.out.println("Novo hash: " + novoHash);
+            System.out.println("Teste com novo hash: " + passwordEncoder.matches(senha, novoHash));
+        }
+        
+        System.out.println("=== FIM DA AUTENTICAÇÃO ===");
+        return senhaCorreta;
     }
 
     private Admin mapAdmin(ResultSet rs) throws SQLException {
@@ -139,9 +183,9 @@ public class AdminDAO implements AdminRepository {
         admin.setIdAdmin(rs.getInt("id_admin"));
         admin.setNome(rs.getString("nome"));
         admin.setEmail(rs.getString("email"));
-        admin.setSenha(rs.getString("senha"));
+        admin.setSenha(rs.getString("senha")); // Mantém o hash original
         admin.setCargo(rs.getString("cargo"));
         admin.setAtivo(rs.getBoolean("ativo"));
         return admin;
     }
-} 
+}

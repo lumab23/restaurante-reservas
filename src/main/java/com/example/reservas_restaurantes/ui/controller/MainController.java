@@ -83,7 +83,7 @@ public class MainController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin-dashboard.fxml"));
             loader.setControllerFactory(springContext::getBean);
-            AnchorPane dashboardView = loader.load();
+            VBox dashboardView = loader.load();
             
             AdminDashboardController controller = loader.getController();
             controller.setMainController(this);

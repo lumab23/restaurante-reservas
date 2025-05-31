@@ -97,6 +97,11 @@ public class ClienteReservaController {
                 return;
             }
             
+            // Se o usuário está apagando, permitir a operação
+            if (newVal.length() < oldVal.length()) {
+                return;
+            }
+            
             // Remove todos os caracteres não numéricos
             String digits = newVal.replaceAll("\\D", "");
             
@@ -105,27 +110,29 @@ public class ClienteReservaController {
                 digits = digits.substring(0, 11);
             }
             
-            // Formata o número
-            StringBuilder formatted = new StringBuilder();
+            // Formata o número apenas se houver dígitos
             if (!digits.isEmpty()) {
+                StringBuilder formatted = new StringBuilder();
                 formatted.append("(");
                 formatted.append(digits.substring(0, Math.min(2, digits.length())));
+                
                 if (digits.length() > 2) {
                     formatted.append(") ");
                     formatted.append(digits.substring(2, Math.min(7, digits.length())));
+                    
                     if (digits.length() > 7) {
                         formatted.append("-");
                         formatted.append(digits.substring(7));
                     }
                 }
-            }
-            
-            // Atualiza o texto apenas se for diferente para evitar loop infinito
-            String formattedText = formatted.toString();
-            if (!formattedText.equals(newVal)) {
-                txtTelefone.setText(formattedText);
-                // Posiciona o cursor no final
-                txtTelefone.positionCaret(formattedText.length());
+                
+                // Atualiza o texto apenas se for diferente para evitar loop infinito
+                String formattedText = formatted.toString();
+                if (!formattedText.equals(newVal)) {
+                    txtTelefone.setText(formattedText);
+                    // Posiciona o cursor no final
+                    txtTelefone.positionCaret(formattedText.length());
+                }
             }
         });
         
