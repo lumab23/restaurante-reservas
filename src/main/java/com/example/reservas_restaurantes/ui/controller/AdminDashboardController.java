@@ -21,6 +21,7 @@ import java.util.List;
 public class AdminDashboardController {
     
     @FXML private TabPane tabPane;
+    @FXML private Label lblEstatisticas;
     
     // Aba Reservas
     @FXML private TableView<Reserva> tableReservas;
@@ -66,6 +67,7 @@ public class AdminDashboardController {
         setupTables();
         setupActions();
         carregarDados();
+        atualizarEstatisticas();
     }
     
     public void setMainController(MainController mainController) {
@@ -168,5 +170,37 @@ public class AdminDashboardController {
         alert.setHeaderText(null);
         alert.setContentText(mensagem);
         alert.showAndWait();
+    }
+    
+    private void atualizarEstatisticas() {
+        try {
+            // Buscar reservas do dia
+            var reservasHoje = reservaService.listarReservasPorData(LocalDate.now());
+            int totalReservas = reservasHoje.size();
+            int reservasConfirmadas = (int) reservasHoje.stream()
+                .filter(r -> r.getStatusReserva().name().equals("CONFIRMADA"))
+                .count();
+            int reservasPendentes = totalReservas - reservasConfirmadas;
+            
+            // Atualizar label com estatísticas
+            lblEstatisticas.setText(String.format(
+                "Total de reservas hoje: %d\n" +
+                "Reservas confirmadas: %d\n" +
+                "Reservas pendentes: %d",
+                totalReservas,
+                reservasConfirmadas,
+                reservasPendentes
+            ));
+            
+        } catch (Exception e) {
+            System.err.println("Erro ao atualizar estatísticas: " + e.getMessage());
+            lblEstatisticas.setText("Erro ao carregar estatísticas");
+        }
+    }
+    
+    @FXML
+    private void onAtualizarReservas() {
+        carregarDados();
+        atualizarEstatisticas();
     }
 }

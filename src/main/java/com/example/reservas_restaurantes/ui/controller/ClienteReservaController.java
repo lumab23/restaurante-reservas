@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import com.example.reservas_restaurantes.enums.StatusReserva;
 import com.example.reservas_restaurantes.enums.TipoOcasiao;
 import com.example.reservas_restaurantes.model.Cliente;
 import com.example.reservas_restaurantes.model.Mesa;
@@ -195,23 +194,14 @@ public class ClienteReservaController {
                 LocalTime.parse(cbHorario.getValue())
             );
             
-            Reserva reserva = new Reserva(
+            // Fazer a reserva e obter o objeto Reserva completo
+            Reserva reserva = reservaService.fazerNovaReserva(
                 cliente.getIdCliente(),
                 cbMesa.getValue().getIdMesa(),
                 dataHoraReserva,
                 spnNumPessoas.getValue(),
                 cbOcasiao.getValue(),
-                StatusReserva.CONFIRMADA,
                 txtObservacao.getText().trim()
-            );
-            
-            reservaService.fazerNovaReserva(
-                reserva.getIdCliente(),
-                reserva.getIdMesa(),
-                reserva.getDataHora(),
-                reserva.getNumPessoas(),
-                reserva.getOcasiao(),
-                reserva.getObservacao()
             );
             
             mostrarAlerta("Sucesso", 
@@ -221,7 +211,7 @@ public class ClienteReservaController {
                 "Mesa: " + cbMesa.getValue().getIdMesa(),
                 Alert.AlertType.INFORMATION);
             
-            // Opcional: Abrir tela de pagamento
+            // Abrir tela de pagamento com a reserva completa
             abrirTelaPagamento(reserva);
             
         } catch (Exception e) {
@@ -299,21 +289,21 @@ public class ClienteReservaController {
                     }
                     
                     FXMLLoader loader = new FXMLLoader(resourceUrl);
+                    // MUDANÇA PRINCIPAL: Usar o Spring Context para criar o controller
+                    loader.setControllerFactory(mainController.getSpringContext()::getBean);
                     Parent root = loader.load();
-                    
-                    PagamentoUIController pagamentoController = loader.getController();
-                    if (pagamentoController == null) {
-                        throw new IOException("Não foi possível criar o controller da tela de pagamento");
-                    }
-                    
-                    pagamentoController.setReserva(reserva);
-                    pagamentoController.setMainController(mainController);
                     
                     Scene scene = new Scene(root);
                     Stage stage = new Stage();
                     stage.setTitle("Pagamento da Reserva");
                     stage.setScene(scene);
                     stage.initModality(Modality.APPLICATION_MODAL);
+                    
+                    PagamentoUIController pagamentoController = loader.getController();
+                    pagamentoController.setStage(stage);
+                    pagamentoController.setReserva(reserva);
+                    pagamentoController.setMainController(mainController);
+                    
                     stage.showAndWait();
                 } catch (IOException e) {
                     System.err.println("Erro detalhado ao abrir tela de pagamento:");

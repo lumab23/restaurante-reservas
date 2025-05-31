@@ -2,7 +2,6 @@ package com.example.reservas_restaurantes.dao;
 
 import org.springframework.stereotype.Repository;
 
-import com.example.reservas_restaurantes.enums.MetodoPagamento;
 import com.example.reservas_restaurantes.model.Pagamento;
 import com.example.reservas_restaurantes.repository.PagamentoRepository;
 
@@ -44,7 +43,7 @@ public class PagamentoDAO implements PagamentoRepository {
 
             statement.setInt(1, pagamento.getIdReserva());
             statement.setBigDecimal(2, pagamento.getValor());
-            statement.setString(3, pagamento.getMetodoPagamento().name());
+            statement.setString(3, pagamento.getMetodoPagamento());
 
             int linhasAfetadas = statement.executeUpdate();
             if (linhasAfetadas == 0) {
@@ -85,7 +84,7 @@ public class PagamentoDAO implements PagamentoRepository {
                 pagamento.setIdPagamento(rs.getInt("id_pagamento"));
                 pagamento.setIdReserva(rs.getInt("id_reserva"));
                 pagamento.setValor(rs.getBigDecimal("valor"));
-                pagamento.setMetodoPagamento(MetodoPagamento.valueOf(rs.getString("metodoPagamento")));
+                pagamento.setMetodoPagamento(rs.getString("metodoPagamento"));
             }
         } catch (SQLException e) {
             System.err.println("Erro ao buscar pagamento por ID: " + e.getMessage());
@@ -116,7 +115,7 @@ public class PagamentoDAO implements PagamentoRepository {
                 pagamento.setIdPagamento(rs.getInt("id_pagamento"));
                 pagamento.setIdReserva(rs.getInt("id_reserva"));
                 pagamento.setValor(rs.getBigDecimal("valor"));
-                pagamento.setMetodoPagamento(MetodoPagamento.valueOf(rs.getString("metodoPagamento")));
+                pagamento.setMetodoPagamento(rs.getString("metodoPagamento"));
                 pagamentos.add(pagamento);
             }
         } catch (SQLException e) {
@@ -147,7 +146,7 @@ public class PagamentoDAO implements PagamentoRepository {
                 pagamento.setIdPagamento(rs.getInt("id_pagamento"));
                 pagamento.setIdReserva(rs.getInt("id_reserva"));
                 pagamento.setValor(rs.getBigDecimal("valor"));
-                pagamento.setMetodoPagamento(MetodoPagamento.valueOf(rs.getString("metodoPagamento")));
+                pagamento.setMetodoPagamento(rs.getString("metodoPagamento"));
                 pagamentos.add(pagamento);
             }
         } catch (SQLException e) {
@@ -173,7 +172,7 @@ public class PagamentoDAO implements PagamentoRepository {
             statement = conn.prepareStatement(sql);
             statement.setInt(1, pagamento.getIdReserva());
             statement.setBigDecimal(2, pagamento.getValor());
-            statement.setString(3, pagamento.getMetodoPagamento().name());
+            statement.setString(3, pagamento.getMetodoPagamento());
             statement.setInt(4, pagamento.getIdPagamento());
 
             int linhasAfetadas = statement.executeUpdate();

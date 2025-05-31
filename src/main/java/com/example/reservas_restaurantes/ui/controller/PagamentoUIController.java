@@ -1,20 +1,19 @@
 package com.example.reservas_restaurantes.ui.controller;
 
 import com.example.reservas_restaurantes.controller.PagamentoController;
-import com.example.reservas_restaurantes.enums.MetodoPagamento;
-import com.example.reservas_restaurantes.model.PagamentoCartao;
-import com.example.reservas_restaurantes.model.PagamentoPix;
-import com.example.reservas_restaurantes.model.Reserva;
+import com.example.reservas_restaurantes.controller.ClienteController;
+import com.example.reservas_restaurantes.controller.MesaController;
+import com.example.reservas_restaurantes.model.*;
+import com.example.reservas_restaurantes.service.ReservaService;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
@@ -24,126 +23,183 @@ import java.util.ResourceBundle;
 @Component
 public class PagamentoUIController implements Initializable {
 
-    @FXML private Text resumoReservaText;
+    @FXML private Text clienteText;
+    @FXML private Text mesaText;
+    @FXML private Text dataHoraText;
+    @FXML private Text numPessoasText;
+    @FXML private Text ocasiaoText;
+    @FXML private Text statusText;
     @FXML private Text valorTotalText;
-    @FXML private RadioButton cartaoRadio;
-    @FXML private RadioButton pixRadio;
     @FXML private VBox cartaoBox;
-    @FXML private VBox pixBox;
     @FXML private TextField numeroCartaoField;
     @FXML private TextField titularField;
     @FXML private TextField validadeField;
     @FXML private TextField cvvField;
-    @FXML private ImageView qrCodeImage;
-    @FXML private TextField chavePixField;
-    @FXML private ToggleGroup metodoPagamento;
+    @FXML private Stage stage;
 
-    private final PagamentoController pagamentoService;
+    @Autowired
+    private PagamentoController pagamentoService;
+    
+    @Autowired
+    private ReservaService reservaService;
+    
+    @Autowired
+    private ClienteController clienteController;
+    
+    @Autowired
+    private MesaController mesaController;
+    
     private Reserva reserva;
     private MainController mainController;
 
-    // Valores fixos por quantidade de pessoas
     private static final BigDecimal VALOR_ATE_5_PESSOAS = new BigDecimal("50.00");
     private static final BigDecimal VALOR_MAIS_5_PESSOAS = new BigDecimal("100.00");
 
-    public PagamentoUIController(PagamentoController pagamentoService) {
-        this.pagamentoService = pagamentoService;
-    }
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        setupListeners();
+        System.out.println("Inicializando PagamentoUIController...");
         setupValidators();
-    }
-
-    private void setupListeners() {
-        cartaoRadio.selectedProperty().addListener((obs, oldVal, newVal) -> {
-            cartaoBox.setVisible(newVal);
-            pixBox.setVisible(!newVal);
-        });
-
-        pixRadio.selectedProperty().addListener((obs, oldVal, newVal) -> {
-            pixBox.setVisible(newVal);
-            cartaoBox.setVisible(!newVal);
-        });
-
-        // Formatar número do cartão (XXXX XXXX XXXX XXXX)
-        numeroCartaoField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal.matches("\\d*")) {
-                numeroCartaoField.setText(newVal.replaceAll("[^\\d]", ""));
-            }
-            if (newVal.length() > 16) {
-                numeroCartaoField.setText(oldVal);
-            }
-        });
-
-        // Formatar validade (MM/AA)
-        validadeField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal.matches("\\d*")) {
-                validadeField.setText(newVal.replaceAll("[^\\d]", ""));
-            }
-            if (newVal.length() > 4) {
-                validadeField.setText(oldVal);
-            }
-            if (newVal.length() == 2 && !newVal.contains("/")) {
-                validadeField.setText(newVal + "/");
-            }
-        });
-
-        // Formatar CVV (apenas números, max 3 dígitos)
-        cvvField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal.matches("\\d*")) {
-                cvvField.setText(newVal.replaceAll("[^\\d]", ""));
-            }
-            if (newVal.length() > 3) {
-                cvvField.setText(oldVal);
-            }
-        });
+        
+        if (valorTotalText != null) {
+            valorTotalText.setText("Valor Total: R$ 0,00");
+        }
     }
 
     private void setupValidators() {
-        // Validação do número do cartão (Luhn algorithm)
-        numeroCartaoField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal) {
-                String numero = numeroCartaoField.getText().replaceAll("\\s", "");
-                if (!isValidCardNumber(numero)) {
-                    mostrarAlerta("Erro", "Número do cartão inválido", Alert.AlertType.ERROR);
-                    numeroCartaoField.setText("");
+        // Formatar número do cartão (XXXX XXXX XXXX XXXX)
+        if (numeroCartaoField != null) {
+            numeroCartaoField.textProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null) {
+                    String digits = newVal.replaceAll("[^\\d]", "");
+                    if (digits.length() > 16) {
+                        numeroCartaoField.setText(oldVal);
+                        return;
+                    }
+                    StringBuilder formatted = new StringBuilder();
+                    for (int i = 0; i < digits.length(); i++) {
+                        if (i > 0 && i % 4 == 0) {
+                            formatted.append(" ");
+                        }
+                        formatted.append(digits.charAt(i));
+                    }
+                    if (!formatted.toString().equals(newVal)) {
+                        numeroCartaoField.setText(formatted.toString());
+                    }
                 }
-            }
-        });
+            });
+        }
+
+        // Formatar validade (MM/AA)
+        if (validadeField != null) {
+            validadeField.textProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null) {
+                    String digits = newVal.replaceAll("[^\\d]", "");
+                    if (digits.length() > 4) {
+                        validadeField.setText(oldVal);
+                        return;
+                    }
+                    if (digits.length() >= 2 && !newVal.contains("/")) {
+                        String formatted = digits.substring(0, 2) + "/" + digits.substring(2);
+                        if (!formatted.equals(newVal)) {
+                            validadeField.setText(formatted);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Formatar CVV (apenas números, max 3 dígitos)
+        if (cvvField != null) {
+            cvvField.textProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null) {
+                    String digits = newVal.replaceAll("[^\\d]", "");
+                    if (digits.length() > 3) {
+                        cvvField.setText(oldVal);
+                    } else if (!digits.equals(newVal)) {
+                        cvvField.setText(digits);
+                    }
+                }
+            });
+        }
+
+        // Validação do número do cartão
+        if (numeroCartaoField != null) {
+            numeroCartaoField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+                if (!newVal) {
+                    String numero = numeroCartaoField.getText().replaceAll("\\s", "");
+                    if (!numero.isEmpty() && !isValidCardNumber(numero)) {
+                        mostrarAlerta("Erro", "Número do cartão inválido", Alert.AlertType.ERROR);
+                        numeroCartaoField.setText("");
+                    }
+                }
+            });
+        }
 
         // Validação da data de validade
-        validadeField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal) {
-                String validade = validadeField.getText();
-                if (!isValidExpiryDate(validade)) {
-                    mostrarAlerta("Erro", "Data de validade inválida", Alert.AlertType.ERROR);
-                    validadeField.setText("");
+        if (validadeField != null) {
+            validadeField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+                if (!newVal) {
+                    String validade = validadeField.getText();
+                    if (!validade.isEmpty() && !isValidExpiryDate(validade)) {
+                        mostrarAlerta("Erro", "Data de validade inválida", Alert.AlertType.ERROR);
+                        validadeField.setText("");
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     public void setReserva(Reserva reserva) {
+        System.out.println("Definindo reserva no PagamentoUIController: " + 
+                          (reserva != null ? reserva.getIdReserva() : "null"));
         this.reserva = reserva;
         atualizarResumoReserva();
-        gerarChavePix();
     }
 
     public void setMainController(MainController mainController) {
+        System.out.println("Definindo MainController no PagamentoUIController");
         this.mainController = mainController;
     }
 
     private void atualizarResumoReserva() {
         if (reserva != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            resumoReservaText.setText(String.format("Reserva para %d pessoas em %s",
-                    reserva.getNumPessoas(),
-                    reserva.getDataHora().format(formatter)));
             
-            BigDecimal valorTotal = calcularValorTotal();
-            valorTotalText.setText(String.format("Valor Total: R$ %.2f", valorTotal));
+            try {
+                // Buscar informações do cliente e mesa usando os controllers
+                Reserva reservaCompleta = reservaService.buscarReservaPorId(reserva.getIdReserva());
+                Cliente cliente = clienteController.buscarClientePorId(reservaCompleta.getIdCliente());
+                Mesa mesa = mesaController.buscarMesaPorId(reservaCompleta.getIdMesa());
+                
+                if (cliente == null || mesa == null) {
+                    throw new RuntimeException("Não foi possível encontrar informações do cliente ou da mesa");
+                }
+                
+                clienteText.setText(cliente.getNome());
+                mesaText.setText(mesa.getLocalizacao() + " (Capacidade: " + mesa.getCapacidade() + " pessoas)");
+                dataHoraText.setText(reservaCompleta.getDataHora().format(formatter));
+                numPessoasText.setText(String.valueOf(reservaCompleta.getNumPessoas()));
+                ocasiaoText.setText(formatarOcasiao(reservaCompleta.getOcasiao().name()));
+                statusText.setText(formatarStatus(reservaCompleta.getStatusReserva().name()));
+                
+                BigDecimal valorTotal = calcularValorTotal();
+                valorTotalText.setText(String.format("R$ %.2f", valorTotal));
+            } catch (Exception e) {
+                mostrarAlerta("Erro", "Erro ao carregar detalhes da reserva: " + e.getMessage(), Alert.AlertType.ERROR);
+            }
+        }
+    }
+
+    private String formatarOcasiao(String ocasiao) {
+        return ocasiao.replace("_", " ").toLowerCase();
+    }
+
+    private String formatarStatus(String status) {
+        switch (status) {
+            case "PENDENTE": return "Aguardando Confirmação";
+            case "CONFIRMADA": return "Confirmada";
+            case "CANCELADA": return "Cancelada";
+            default: return status;
         }
     }
 
@@ -151,36 +207,28 @@ public class PagamentoUIController implements Initializable {
         if (reserva == null) {
             return BigDecimal.ZERO;
         }
-
         return reserva.getNumPessoas() <= 5 ? VALOR_ATE_5_PESSOAS : VALOR_MAIS_5_PESSOAS;
-    }
-
-    private void gerarChavePix() {
-        // TODO: Implementar geração real de chave PIX
-        String chavePix = "restaurante-" + reserva.getIdReserva() + "@pix.com";
-        chavePixField.setText(chavePix);
-        // TODO: Gerar e exibir QR Code
-    }
-
-    @FXML
-    private void copiarChavePix() {
-        String chave = chavePixField.getText();
-        if (chave != null && !chave.isEmpty()) {
-            StringSelection selection = new StringSelection(chave);
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
-            mostrarAlerta("Sucesso", "Chave PIX copiada para a área de transferência", Alert.AlertType.INFORMATION);
-        }
     }
 
     @FXML
     private void confirmarPagamento() {
         try {
-            if (cartaoRadio.isSelected()) {
-                processarPagamentoCartao();
-            } else {
-                processarPagamentoPix();
+            System.out.println("Confirmando pagamento...");
+            
+            if (reserva == null) {
+                mostrarAlerta("Erro", "Informações da reserva não encontradas", Alert.AlertType.ERROR);
+                return;
             }
+            
+            if (pagamentoService == null) {
+                mostrarAlerta("Erro", "Serviço de pagamento não inicializado", Alert.AlertType.ERROR);
+                return;
+            }
+            
+            processarPagamentoCartao();
         } catch (Exception e) {
+            System.err.println("Erro ao processar pagamento: " + e.getMessage());
+            e.printStackTrace();
             mostrarAlerta("Erro", "Erro ao processar pagamento: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -190,49 +238,40 @@ public class PagamentoUIController implements Initializable {
             return;
         }
 
-        PagamentoCartao detalhesCartao = new PagamentoCartao();
-        detalhesCartao.setNumeroCartao(numeroCartaoField.getText());
-        detalhesCartao.setTitular(titularField.getText());
-        detalhesCartao.setValidade(parseExpiryDate(validadeField.getText()));
-        detalhesCartao.setCvv(cvvField.getText());
+        try {
+            PagamentoCartao detalhesCartao = new PagamentoCartao();
+            detalhesCartao.setNumeroCartao(numeroCartaoField.getText().replaceAll("\\s", ""));
+            detalhesCartao.setTitular(titularField.getText());
+            detalhesCartao.setValidade(parseExpiryDate(validadeField.getText()));
+            detalhesCartao.setCvv(cvvField.getText());
 
-        var pagamento = pagamentoService.processarPagamento(
-                reserva.getIdReserva(),
-                calcularValorTotal(),
-                MetodoPagamento.CARTAO,
-                detalhesCartao,
-                null
-        );
+            var pagamento = pagamentoService.processarPagamento(
+                    reserva.getIdReserva(),
+                    calcularValorTotal(),
+                    detalhesCartao
+            );
 
-        if (pagamento != null) {
-            mostrarAlerta("Sucesso", "Pagamento realizado com sucesso!", Alert.AlertType.INFORMATION);
-            voltarInicio();
-        }
-    }
-
-    private void processarPagamentoPix() {
-        PagamentoPix detalhesPix = new PagamentoPix();
-        detalhesPix.setChavePix(chavePixField.getText());
-
-        var pagamento = pagamentoService.processarPagamento(
-                reserva.getIdReserva(),
-                calcularValorTotal(),
-                MetodoPagamento.PIX,
-                null,
-                detalhesPix
-        );
-
-        if (pagamento != null) {
-            mostrarAlerta("Sucesso", "Pagamento PIX registrado! Aguarde a confirmação.", Alert.AlertType.INFORMATION);
-            voltarInicio();
+            if (pagamento != null) {
+                mostrarAlerta("Sucesso", "Pagamento realizado com sucesso!", Alert.AlertType.INFORMATION);
+                voltarInicio();
+                fecharJanela();
+            }
+        } catch (Exception e) {
+            mostrarAlerta("Erro", "Erro ao processar pagamento: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
     private boolean validarCamposCartao() {
-        if (numeroCartaoField.getText().isEmpty() ||
-            titularField.getText().isEmpty() ||
-            validadeField.getText().isEmpty() ||
-            cvvField.getText().isEmpty()) {
+        if (numeroCartaoField == null || titularField == null || 
+            validadeField == null || cvvField == null) {
+            mostrarAlerta("Erro", "Campos do cartão não inicializados", Alert.AlertType.ERROR);
+            return false;
+        }
+
+        if (numeroCartaoField.getText().trim().isEmpty() ||
+            titularField.getText().trim().isEmpty() ||
+            validadeField.getText().trim().isEmpty() ||
+            cvvField.getText().trim().isEmpty()) {
             mostrarAlerta("Erro", "Preencha todos os campos do cartão", Alert.AlertType.ERROR);
             return false;
         }
@@ -290,6 +329,7 @@ public class PagamentoUIController implements Initializable {
     @FXML
     private void cancelarPagamento() {
         voltarInicio();
+        fecharJanela();
     }
 
     private void voltarInicio() {
@@ -305,4 +345,14 @@ public class PagamentoUIController implements Initializable {
         alert.setContentText(mensagem);
         alert.showAndWait();
     }
-} 
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+    
+    public void fecharJanela() {
+        if (stage != null) {
+            stage.close();
+        }
+    }
+}

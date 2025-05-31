@@ -5,7 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import com.example.reservas_restaurantes.service.AdminService;
@@ -24,7 +24,7 @@ public class MainController {
     private AdminService adminService;
     
     @Autowired
-    private ConfigurableApplicationContext springContext;
+    private ApplicationContext springContext;
     
     private boolean isAdminMode = false;
     
@@ -141,5 +141,9 @@ public class MainController {
         alert.setHeaderText(null);
         alert.setContentText(mensagem);
         alert.showAndWait();
+    }
+    
+    public ApplicationContext getSpringContext() {
+        return springContext;
     }
 }
