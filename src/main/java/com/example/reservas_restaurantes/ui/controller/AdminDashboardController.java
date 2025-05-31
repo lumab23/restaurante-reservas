@@ -1,10 +1,15 @@
 package com.example.reservas_restaurantes.ui.controller;
 
 import com.example.reservas_restaurantes.exception.BusinessRuleException;
+import com.example.reservas_restaurantes.enums.StatusReserva;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javafx.application.Platform;
@@ -15,9 +20,13 @@ import com.example.reservas_restaurantes.model.Reserva;
 import com.example.reservas_restaurantes.service.ClienteService;
 import com.example.reservas_restaurantes.service.MesaService;
 import com.example.reservas_restaurantes.service.ReservaService;
+import com.example.reservas_restaurantes.utils.WindowUtils;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
 
 @Component
 public class AdminDashboardController {
@@ -33,6 +42,7 @@ public class AdminDashboardController {
     @FXML private TableColumn<Reserva, String> colDataHora;
     @FXML private TableColumn<Reserva, Integer> colNumPessoas;
     @FXML private TableColumn<Reserva, String> colStatus;
+    @FXML private TableColumn<Reserva, String> colObservacao;
     @FXML private DatePicker dpFiltroData;
     @FXML private Button btnFiltrarReservas;
     @FXML private Button btnAtualizarReservas;
@@ -51,7 +61,11 @@ public class AdminDashboardController {
     @FXML private TableColumn<Mesa, Integer> colCapacidade;
     @FXML private TableColumn<Mesa, String> colLocalizacao;
     @FXML private TableColumn<Mesa, String> colStatusMesa;
+    @FXML private TableColumn<Mesa, String> colHorariosReserva;
+    @FXML private TableColumn<Mesa, String> colObservacoesMesa;
     @FXML private Button btnAtualizarMesas;
+    @FXML private DatePicker dpFiltroDataMesas;
+    @FXML private Button btnFiltrarMesas;
     
     @FXML private Button btnLogout;
     
@@ -90,6 +104,7 @@ public class AdminDashboardController {
         colStatus.setCellValueFactory(cellData -> 
             javafx.beans.binding.Bindings.createStringBinding(() -> 
                 cellData.getValue().getStatusReserva().toString()));
+        colObservacao.setCellValueFactory(new PropertyValueFactory<>("observacao"));
         
         // Configurar tabela de clientes
         colIdClienteCliente.setCellValueFactory(new PropertyValueFactory<>("idCliente"));
@@ -104,6 +119,54 @@ public class AdminDashboardController {
         colStatusMesa.setCellValueFactory(cellData -> 
             javafx.beans.binding.Bindings.createStringBinding(() -> 
                 cellData.getValue().getStatusMesa().toString()));
+        
+        // Configurar coluna de horários de reserva
+        colHorariosReserva.setCellValueFactory(cellData -> {
+            Mesa mesa = cellData.getValue();
+            LocalDate dataFiltro = dpFiltroDataMesas.getValue() != null ? 
+                dpFiltroDataMesas.getValue() : LocalDate.now();
+            
+            try {
+                List<Reserva> reservas = reservaService.listarReservasPorMesaEData(mesa.getIdMesa(), dataFiltro);
+                if (reservas.isEmpty()) {
+                    return javafx.beans.binding.Bindings.createStringBinding(() -> "Sem reservas");
+                }
+                
+                String horarios = reservas.stream()
+                    .filter(r -> r.getStatusReserva() != StatusReserva.CANCELADA)
+                    .map(r -> r.getDataHora().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")))
+                    .collect(Collectors.joining(", "));
+                
+                return javafx.beans.binding.Bindings.createStringBinding(() -> horarios);
+            } catch (Exception e) {
+                return javafx.beans.binding.Bindings.createStringBinding(() -> "Erro ao carregar horários");
+            }
+        });
+        
+        // Configurar coluna de observações
+        colObservacoesMesa.setCellValueFactory(cellData -> {
+            Mesa mesa = cellData.getValue();
+            LocalDate dataFiltro = dpFiltroDataMesas.getValue() != null ? 
+                dpFiltroDataMesas.getValue() : LocalDate.now();
+            
+            try {
+                List<Reserva> reservas = reservaService.listarReservasPorMesaEData(mesa.getIdMesa(), dataFiltro);
+                if (reservas.isEmpty()) {
+                    return javafx.beans.binding.Bindings.createStringBinding(() -> "");
+                }
+                
+                String observacoes = reservas.stream()
+                    .filter(r -> r.getStatusReserva() != StatusReserva.CANCELADA && r.getObservacao() != null && !r.getObservacao().trim().isEmpty())
+                    .map(r -> String.format("%s: %s", 
+                        r.getDataHora().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                        r.getObservacao()))
+                    .collect(Collectors.joining("\n"));
+                
+                return javafx.beans.binding.Bindings.createStringBinding(() -> observacoes);
+            } catch (Exception e) {
+                return javafx.beans.binding.Bindings.createStringBinding(() -> "Erro ao carregar observações");
+            }
+        });
     }
     
     private void setupActions() {
@@ -111,6 +174,7 @@ public class AdminDashboardController {
         btnAtualizarReservas.setOnAction(e -> onAtualizarReservas());
         btnAtualizarClientes.setOnAction(e -> carregarClientes());
         btnAtualizarMesas.setOnAction(e -> carregarMesas());
+        btnFiltrarMesas.setOnAction(e -> filtrarMesasPorData());
         btnLogout.setOnAction(e -> logout());
     }
 
@@ -239,8 +303,22 @@ public class AdminDashboardController {
     
     private void carregarMesas() {
         try {
+            LocalDate dataFiltro = dpFiltroDataMesas.getValue();
+            if (dataFiltro == null) {
+                // Se não houver data selecionada, usar a data atual
+                dataFiltro = LocalDate.now();
+            }
+
+            // Atualizar o status das mesas para a data selecionada
+            reservaService.atualizarStatusMesasPorData(dataFiltro);
+            
+            // Carregar as mesas atualizadas
             List<Mesa> mesas = mesaService.listarTodasMesas();
             tableMesas.setItems(FXCollections.observableArrayList(mesas));
+            
+            // Atualizar o título da coluna de status para mostrar a data
+            colStatusMesa.setText("Status (" + dataFiltro.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ")");
+            
         } catch (Exception e) {
             mostrarAlerta("Erro", "Erro ao carregar mesas: " + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -264,7 +342,39 @@ public class AdminDashboardController {
     
     @FXML
     private void logout() {
-        mainController.voltarInicio();
+        Alert confirmacao = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacao.setTitle("Confirmar Saída");
+        confirmacao.setHeaderText("Tem certeza que deseja sair?");
+        confirmacao.setContentText("Você será redirecionado para a tela inicial.");
+        
+        confirmacao.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+        
+        confirmacao.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.YES) {
+                try {
+                    // Primeiro desativar o modo admin
+                    mainController.setAdminMode(false);
+                    
+                    // Carregar a view principal
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main-view.fxml"));
+                    loader.setControllerFactory(mainController.getSpringContext()::getBean);
+                    Parent root = loader.load();
+                    
+                    // Configurar a cena
+                    Scene scene = new Scene(root);
+                    scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+                    
+                    // Obter o Stage atual do botão de logout
+                    Stage stage = (Stage) btnLogout.getScene().getWindow();
+                    stage.setScene(scene);
+                    stage.setTitle("Sistema de Reservas");
+                    WindowUtils.configureWindowSize(stage);
+                    stage.show();
+                } catch (IOException e) {
+                    mostrarAlerta("Erro", "Erro ao voltar: " + e.getMessage(), Alert.AlertType.ERROR);
+                }
+            }
+        });
     }
     
     private void mostrarAlerta(String titulo, String mensagem, Alert.AlertType tipo) {
@@ -387,5 +497,10 @@ public class AdminDashboardController {
         } catch (Exception e) {
             mostrarAlerta("Erro", "Erro ao deletar cliente: " + e.getMessage(), Alert.AlertType.ERROR);
         }
+    }
+
+    @FXML
+    private void filtrarMesasPorData() {
+        carregarMesas();
     }
 }
