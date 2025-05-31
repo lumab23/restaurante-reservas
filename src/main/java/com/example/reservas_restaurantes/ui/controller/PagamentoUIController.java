@@ -5,8 +5,12 @@ import com.example.reservas_restaurantes.controller.MesaController;
 import com.example.reservas_restaurantes.model.*;
 import com.example.reservas_restaurantes.service.ClienteService;
 import com.example.reservas_restaurantes.service.ReservaService;
+import com.example.reservas_restaurantes.utils.WindowUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -19,6 +23,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
+import java.io.IOException;
 
 @Component
 public class PagamentoUIController implements Initializable {
@@ -332,8 +337,34 @@ public class PagamentoUIController implements Initializable {
 
             if (pagamento != null) {
                 mostrarAlerta("Sucesso", "Pagamento realizado com sucesso!", Alert.AlertType.INFORMATION);
-                voltarInicio();
-                fecharJanela();
+                
+                // Primeiro voltar para a tela principal
+                if (mainController != null) {
+                    try {
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main-view.fxml"));
+                        loader.setControllerFactory(mainController.getSpringContext()::getBean);
+                        Parent root = loader.load();
+                        
+                        Scene scene = new Scene(root);
+                        scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+                        
+                        // Obter o Stage da janela principal (não da janela de pagamento)
+                        Stage mainStage = (Stage) stage.getOwner();
+                        if (mainStage == null) {
+                            mainStage = new Stage();
+                        }
+                        
+                        mainStage.setScene(scene);
+                        mainStage.setTitle("Sistema de Reservas");
+                        WindowUtils.configureWindowSize(mainStage);
+                        mainStage.show();
+                        
+                        // Só então fechar a janela de pagamento
+                        fecharJanela();
+                    } catch (IOException e) {
+                        mostrarAlerta("Erro", "Erro ao voltar para a tela principal: " + e.getMessage(), Alert.AlertType.ERROR);
+                    }
+                }
             }
         } catch (Exception e) {
             mostrarAlerta("Erro", "Erro ao processar pagamento: " + e.getMessage(), Alert.AlertType.ERROR);

@@ -1,10 +1,9 @@
 package com.example.reservas_restaurantes.dao;
 
-import org.springframework.stereotype.Repository;
-
+import org.springframework.stereotype.Component;
 import com.example.reservas_restaurantes.model.Cliente;
 import com.example.reservas_restaurantes.repository.ClienteRepository;
-
+import com.example.reservas_restaurantes.exception.BusinessRuleException;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import javax.sql.DataSource;
@@ -13,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
+@Component
 public class ClienteDAO implements ClienteRepository {
 
     private final DataSource dataSource;
@@ -196,6 +195,45 @@ public class ClienteDAO implements ClienteRepository {
         } finally {
             if (statement != null) statement.close();
             releaseConnection(connection);
+        }
+    }
+
+    @Override
+    public Optional<Cliente> buscarPorEmail(String email) throws BusinessRuleException {
+        String sql = "SELECT id_cliente, nome, telefone, email, dataNascimento FROM Cliente WHERE email = ?";
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, email);
+            rs = statement.executeQuery();
+            
+            if (rs.next()) {
+                Cliente cliente = new Cliente();
+                cliente.setIdCliente(rs.getInt("id_cliente"));
+                cliente.setNome(rs.getString("nome"));
+                cliente.setTelefone(rs.getString("telefone"));
+                cliente.setEmail(rs.getString("email"));
+                Date dataNascimento = rs.getDate("dataNascimento");
+                if (dataNascimento != null) {
+                    cliente.setDataNascimento(dataNascimento.toLocalDate());
+                }
+                return Optional.of(cliente);
+            }
+            return Optional.empty();
+        } catch (SQLException e) {
+            throw new BusinessRuleException("Erro ao buscar cliente por email: " + e.getMessage());
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (statement != null) statement.close();
+                releaseConnection(connection);
+            } catch (SQLException e) {
+                throw new BusinessRuleException("Erro ao fechar conexão: " + e.getMessage());
+            }
         }
     }
 }

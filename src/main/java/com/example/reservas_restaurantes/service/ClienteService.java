@@ -113,4 +113,13 @@ public class ClienteService {
             throw new BusinessRuleException("Erro ao deletar cliente: " + e.getMessage(), e);
         }
     }
+
+    public Optional<Cliente> buscarClientePorEmail(String email) {
+        try {
+            return clienteRepository.buscarPorEmail(email);
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar cliente por email: " + e.getMessage());
+            return Optional.empty();
+        }
+    }
 }

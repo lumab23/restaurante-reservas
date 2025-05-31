@@ -114,7 +114,7 @@ public class ReservaDAO implements ReservaRepository {
     @Override
     public List<Reserva> buscarTodos() throws SQLException {
         String sql = "SELECT id_reserva, id_cliente, id_mesa, dataHora, numPessoas, ocasiao, statusReserva, observacao " +
-                "FROM Reserva";
+                "FROM Reserva WHERE statusReserva != 'CANCELADA'";
         System.out.println("ReservaDAO: Executando query: " + sql);
         List<Reserva> reservas = new ArrayList<>();
         Connection connection = null;
@@ -246,7 +246,7 @@ public class ReservaDAO implements ReservaRepository {
     @Override
     public List<Reserva> buscarPorCliente(int idCliente) throws SQLException {
         String sql = "SELECT id_reserva, id_cliente, id_mesa, dataHora, numPessoas, ocasiao, statusReserva, observacao " +
-                "FROM Reserva WHERE id_cliente = ?";
+                "FROM Reserva WHERE id_cliente = ? AND statusReserva != 'CANCELADA'";
         List<Reserva> reservas = new ArrayList<>();
         Connection connection = null;
         PreparedStatement statement = null;
