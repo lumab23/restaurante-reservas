@@ -2,14 +2,6 @@
 CREATE DATABASE IF NOT EXISTS restaurante_reservas_db;
 USE restaurante_reservas_db;
 
--- Drop das tabelas existentes (em ordem para respeitar as chaves estrangeiras)
-DROP TABLE IF EXISTS PagamentoCartao;
-DROP TABLE IF EXISTS Pagamento;
-DROP TABLE IF EXISTS Reserva;
-DROP TABLE IF EXISTS Mesa;
-DROP TABLE IF EXISTS Cliente;
-DROP TABLE IF EXISTS Admin;
-
 -- Criação da tabela Cliente
 CREATE TABLE Cliente (
     id_cliente INT AUTO_INCREMENT PRIMARY KEY,

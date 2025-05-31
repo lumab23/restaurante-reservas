@@ -15,10 +15,14 @@ public class Cliente {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\(\\d{2}\\) \\d{5}-\\d{4}$");
 
+    private boolean isNewClient = true; // Flag para controlar se é um novo cliente
+
     public Cliente() {
+        this.isNewClient = false; // Construtor vazio é usado para leitura
     }
 
     public Cliente(String nome, String telefone, String email, LocalDate dataNascimento) {
+        this.isNewClient = true; // Construtor com parâmetros é usado para criação
         setNome(nome);
         setTelefone(telefone);
         setEmail(email);
@@ -52,7 +56,10 @@ public class Cliente {
     }
 
     public void setTelefone(String telefone) {
-        if (telefone == null || !PHONE_PATTERN.matcher(telefone).matches()) {
+        if (telefone == null) {
+            throw new IllegalArgumentException("Telefone não pode ser nulo");
+        }
+        if (isNewClient && !PHONE_PATTERN.matcher(telefone).matches()) {
             throw new IllegalArgumentException("Telefone deve estar no formato (XX) XXXXX-XXXX");
         }
         this.telefone = telefone;
@@ -63,7 +70,10 @@ public class Cliente {
     }
 
     public void setEmail(String email) {
-        if (email == null || !EMAIL_PATTERN.matcher(email).matches()) {
+        if (email == null) {
+            throw new IllegalArgumentException("Email não pode ser nulo");
+        }
+        if (isNewClient && !EMAIL_PATTERN.matcher(email).matches()) {
             throw new IllegalArgumentException("Email inválido");
         }
         this.email = email.toLowerCase();
@@ -77,7 +87,7 @@ public class Cliente {
         if (dataNascimento == null) {
             throw new IllegalArgumentException("Data de nascimento não pode ser nula");
         }
-        if (dataNascimento.isAfter(LocalDate.now())) {
+        if (isNewClient && dataNascimento.isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("Data de nascimento não pode ser no futuro");
         }
         this.dataNascimento = dataNascimento;

@@ -1,5 +1,6 @@
 package com.example.reservas_restaurantes.ui.controller;
 
+import com.example.reservas_restaurantes.exception.BusinessRuleException;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -66,6 +67,7 @@ public class AdminDashboardController {
     private void initialize() {
         setupTables();
         setupActions();
+        setupContextMenu();
         carregarDados();
         atualizarEstatisticas();
     }
@@ -104,10 +106,46 @@ public class AdminDashboardController {
     
     private void setupActions() {
         btnFiltrarReservas.setOnAction(e -> filtrarReservasPorData());
-        btnAtualizarReservas.setOnAction(e -> carregarReservas());
+        btnAtualizarReservas.setOnAction(e -> onAtualizarReservas());
         btnAtualizarClientes.setOnAction(e -> carregarClientes());
         btnAtualizarMesas.setOnAction(e -> carregarMesas());
         btnLogout.setOnAction(e -> logout());
+    }
+
+    private void setupContextMenu() {
+        // Menu para a tabela de Reservas
+        ContextMenu reservaContextMenu = new ContextMenu();
+        MenuItem deletarReservaItem = new MenuItem("Deletar Reserva");
+        deletarReservaItem.setOnAction(event -> deletarReservaSelecionada());
+        reservaContextMenu.getItems().add(deletarReservaItem);
+        tableReservas.setContextMenu(reservaContextMenu);
+    }
+
+    /**
+     * Deleta a reserva selecionada na tabela, após confirmação.
+     */
+    private void deletarReservaSelecionada() {
+        Reserva reservaSelecionada = tableReservas.getSelectionModel().getSelectedItem();
+        if (reservaSelecionada == null) {
+            mostrarAlerta("Nenhuma seleção", "Por favor, selecione uma reserva para deletar.", Alert.AlertType.WARNING);
+            return;
+        }
+
+        Alert confirmacao = new Alert(Alert.AlertType.CONFIRMATION, "Tem certeza que deseja deletar a reserva selecionada?", ButtonType.YES, ButtonType.NO);
+        confirmacao.setTitle("Confirmar Deleção");
+        confirmacao.setHeaderText("Deletar Reserva ID: " + reservaSelecionada.getIdReserva());
+
+        confirmacao.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.YES) {
+                try {
+                    reservaService.deletarReserva(reservaSelecionada.getIdReserva());
+                    mostrarAlerta("Sucesso", "Reserva deletada com sucesso.", Alert.AlertType.INFORMATION);
+                    onAtualizarReservas(); // Atualiza tabelas e estatísticas
+                } catch (BusinessRuleException e) {
+                    mostrarAlerta("Erro", "Falha ao deletar a reserva: " + e.getMessage(), Alert.AlertType.ERROR);
+                }
+            }
+        });
     }
     
     private void carregarDados() {
@@ -118,18 +156,26 @@ public class AdminDashboardController {
     
     private void carregarReservas() {
         try {
+            System.out.println("Iniciando carregamento de reservas...");
             List<Reserva> reservas = reservaService.listarTodasReservas();
+            System.out.println("Reservas carregadas: " + reservas.size());
             tableReservas.setItems(FXCollections.observableArrayList(reservas));
         } catch (Exception e) {
+            System.err.println("Erro detalhado ao carregar reservas: " + e.getMessage());
+            e.printStackTrace();
             mostrarAlerta("Erro", "Erro ao carregar reservas: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
     
     private void carregarClientes() {
         try {
+            System.out.println("Iniciando carregamento de clientes...");
             List<Cliente> clientes = clienteService.listarTodosClientes();
+            System.out.println("Clientes carregados: " + clientes.size());
             tableClientes.setItems(FXCollections.observableArrayList(clientes));
         } catch (Exception e) {
+            System.err.println("Erro detalhado ao carregar clientes: " + e.getMessage());
+            e.printStackTrace();
             mostrarAlerta("Erro", "Erro ao carregar clientes: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -180,16 +226,13 @@ public class AdminDashboardController {
             int reservasConfirmadas = (int) reservasHoje.stream()
                 .filter(r -> r.getStatusReserva().name().equals("CONFIRMADA"))
                 .count();
-            int reservasPendentes = totalReservas - reservasConfirmadas;
             
             // Atualizar label com estatísticas
             lblEstatisticas.setText(String.format(
                 "Total de reservas hoje: %d\n" +
-                "Reservas confirmadas: %d\n" +
-                "Reservas pendentes: %d",
+                "Reservas confirmadas: %d",
                 totalReservas,
-                reservasConfirmadas,
-                reservasPendentes
+                reservasConfirmadas
             ));
             
         } catch (Exception e) {

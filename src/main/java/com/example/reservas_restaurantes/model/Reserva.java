@@ -14,11 +14,14 @@ public class Reserva {
     private TipoOcasiao ocasiao;
     private StatusReserva statusReserva;
     private String observacao;
+    private boolean isNewReservation = true; // Flag para controlar se é uma nova reserva
 
     public Reserva() {
+        this.isNewReservation = false; // Construtor vazio é usado para leitura
     }
 
     public Reserva(int idCliente, int idMesa, LocalDateTime dataHora, int numPessoas, TipoOcasiao ocasiao, StatusReserva statusReserva, String observacao) {
+        this.isNewReservation = true; // Construtor com parâmetros é usado para criação
         setIdCliente(idCliente);
         setIdMesa(idMesa);
         setDataHora(dataHora);
@@ -69,7 +72,7 @@ public class Reserva {
         if (dataHora == null) {
             throw new IllegalArgumentException("Data e hora não podem ser nulas");
         }
-        if (dataHora.isBefore(LocalDateTime.now())) {
+        if (isNewReservation && dataHora.isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Data e hora não podem ser no passado");
         }
         this.dataHora = dataHora;
