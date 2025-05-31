@@ -115,6 +115,7 @@ public class ReservaDAO implements ReservaRepository {
     public List<Reserva> buscarTodos() throws SQLException {
         String sql = "SELECT id_reserva, id_cliente, id_mesa, dataHora, numPessoas, ocasiao, statusReserva, observacao " +
                 "FROM Reserva";
+        System.out.println("ReservaDAO: Executando query: " + sql);
         List<Reserva> reservas = new ArrayList<>();
         Connection connection = null;
         PreparedStatement statement = null;
@@ -135,9 +136,15 @@ public class ReservaDAO implements ReservaRepository {
                 reserva.setStatusReserva(StatusReserva.valueOf(rs.getString("statusReserva")));
                 reserva.setObservacao(rs.getString("observacao"));
                 reservas.add(reserva);
+                System.out.println("ReservaDAO: Reserva encontrada - ID: " + reserva.getIdReserva() + 
+                    ", Cliente: " + reserva.getIdCliente() + 
+                    ", Mesa: " + reserva.getIdMesa() + 
+                    ", Data: " + reserva.getDataHora());
             }
+            System.out.println("ReservaDAO: Total de reservas encontradas: " + reservas.size());
         } catch (SQLException e) {
-            System.err.println("Erro ao buscar todas as reservas: " + e.getMessage());
+            System.err.println("Erro detalhado ao buscar todas as reservas: " + e.getMessage());
+            e.printStackTrace();
             throw e;
         } finally {
             if (rs != null) rs.close();

@@ -1,6 +1,5 @@
 package com.example.reservas_restaurantes.service;
 
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,18 +29,20 @@ import java.util.stream.Collectors;
 public class ReservaService {
 
     private final ReservaRepository reservaRepository;
-    private final MesaRepository mesaRepository;
     private final ClienteRepository clienteRepository;
+    private final MesaRepository mesaRepository;
 
     public static final LocalTime HORA_ABERTURA_RESTAURANTE = LocalTime.of(12, 0);
     public static final LocalTime HORA_FECHAMENTO_RESTAURANTE = LocalTime.of(23, 0);
     public static final int DURACAO_PADRAO_RESERVA_HORAS = 2;
     private static final int INTERVALO_SLOTS_MINUTOS = 30;
 
-    public ReservaService(ReservaRepository reservaRepository, MesaRepository mesaRepository, ClienteRepository clienteRepository) {
+    public ReservaService(ReservaRepository reservaRepository,
+                         ClienteRepository clienteRepository,
+                         MesaRepository mesaRepository) {
         this.reservaRepository = reservaRepository;
-        this.mesaRepository = mesaRepository;
         this.clienteRepository = clienteRepository;
+        this.mesaRepository = mesaRepository;
     }
 
     private void validarIdadeClienteParaReserva(Cliente cliente) throws BusinessRuleException {
@@ -55,7 +56,7 @@ public class ReservaService {
         }
     }
 
-    @Transactional
+    @Transactional(rollbackFor = {SQLException.class, BusinessRuleException.class, EntidadeNaoEncontradaException.class})
     public Reserva fazerNovaReserva(int idCliente, int idMesa, LocalDateTime dataHora, int numPessoas, TipoOcasiao ocasiao, String observacao)
             throws BusinessRuleException, EntidadeNaoEncontradaException {
 
@@ -100,7 +101,6 @@ public class ReservaService {
             mesaRepository.atualizarStatus(idMesa, StatusMesa.RESERVADA);
 
             return novaReserva;
-
         } catch (SQLException e) {
             throw new BusinessRuleException("Erro de banco de dados ao fazer nova reserva: " + e.getMessage(), e);
         }
@@ -176,9 +176,13 @@ public class ReservaService {
 
     public List<Reserva> listarTodasReservas() {
         try {
-            return reservaRepository.buscarTodos();
+            System.out.println("ReservaService: Iniciando busca de todas as reservas");
+            List<Reserva> reservas = reservaRepository.buscarTodos();
+            System.out.println("ReservaService: Encontradas " + reservas.size() + " reservas");
+            return reservas;
         } catch (SQLException e) {
-            System.err.println("Erro ao listar todas as reservas: " + e.getMessage());
+            System.err.println("Erro detalhado ao listar todas as reservas: " + e.getMessage());
+            e.printStackTrace();
             return List.of();
         }
     }
@@ -264,6 +268,19 @@ public class ReservaService {
             }
         } catch (SQLException e) {
             System.err.println("Atenção: Reserva cancelada, mas falha ao verificar status da mesa: " + e.getMessage());
+        }
+    }
+
+    // deletar reserva
+    @Transactional
+    public void deletarReserva(int idReserva) throws BusinessRuleException, EntidadeNaoEncontradaException {
+        // verificar se a reserva existe
+        buscarReservaPorId(idReserva);
+
+        try {
+            reservaRepository.deletar(idReserva);
+        } catch (Exception e) {
+            throw new BusinessRuleException("erro de banco de dados ao deletar a reserva: " + e.getMessage(), e);
         }
     }
 }

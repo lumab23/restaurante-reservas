@@ -1,9 +1,9 @@
 package com.example.reservas_restaurantes.ui.controller;
 
 import com.example.reservas_restaurantes.controller.PagamentoController;
-import com.example.reservas_restaurantes.controller.ClienteController;
 import com.example.reservas_restaurantes.controller.MesaController;
 import com.example.reservas_restaurantes.model.*;
+import com.example.reservas_restaurantes.service.ClienteService;
 import com.example.reservas_restaurantes.service.ReservaService;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -44,7 +44,7 @@ public class PagamentoUIController implements Initializable {
     private ReservaService reservaService;
     
     @Autowired
-    private ClienteController clienteController;
+    private ClienteService clienteService;
     
     @Autowired
     private MesaController mesaController;
@@ -247,7 +247,7 @@ public class PagamentoUIController implements Initializable {
             try {
                 // Buscar informações do cliente e mesa usando os controllers
                 Reserva reservaCompleta = reservaService.buscarReservaPorId(reserva.getIdReserva());
-                Cliente cliente = clienteController.buscarClientePorId(reservaCompleta.getIdCliente());
+                Cliente cliente = clienteService.buscarClientePorId(reservaCompleta.getIdCliente());
                 Mesa mesa = mesaController.buscarMesaPorId(reservaCompleta.getIdMesa());
                 
                 if (cliente == null || mesa == null) {
