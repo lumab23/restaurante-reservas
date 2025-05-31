@@ -69,12 +69,26 @@ public class PagamentoUIController implements Initializable {
         // Formatar número do cartão (XXXX XXXX XXXX XXXX)
         if (numeroCartaoField != null) {
             numeroCartaoField.textProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal != null) {
-                    String digits = newVal.replaceAll("[^\\d]", "");
-                    if (digits.length() > 16) {
-                        numeroCartaoField.setText(oldVal);
-                        return;
-                    }
+                if (newVal == null) {
+                    numeroCartaoField.setText("");
+                    return;
+                }
+                
+                // Se o usuário está apagando, permitir a operação
+                if (newVal.length() < oldVal.length()) {
+                    return;
+                }
+                
+                // Remove todos os caracteres não numéricos
+                String digits = newVal.replaceAll("[^\\d]", "");
+                
+                // Limita a 16 dígitos
+                if (digits.length() > 16) {
+                    digits = digits.substring(0, 16);
+                }
+                
+                // Formata o número apenas se houver dígitos
+                if (!digits.isEmpty()) {
                     StringBuilder formatted = new StringBuilder();
                     for (int i = 0; i < digits.length(); i++) {
                         if (i > 0 && i % 4 == 0) {
@@ -82,27 +96,64 @@ public class PagamentoUIController implements Initializable {
                         }
                         formatted.append(digits.charAt(i));
                     }
-                    if (!formatted.toString().equals(newVal)) {
-                        numeroCartaoField.setText(formatted.toString());
+                    
+                    // Atualiza o texto apenas se for diferente para evitar loop infinito
+                    String formattedText = formatted.toString();
+                    if (!formattedText.equals(newVal)) {
+                        numeroCartaoField.setText(formattedText);
+                        // Posiciona o cursor no final
+                        numeroCartaoField.positionCaret(formattedText.length());
                     }
                 }
             });
+
+            // Adicionar tooltip com números de teste
+            numeroCartaoField.setTooltip(new Tooltip(
+                "Números de teste válidos:\n" +
+                "Visa: 4532 0151 1283 0366\n" +
+                "Mastercard: 5424 0000 0000 0015\n" +
+                "American Express: 3782 8224 6310 005\n" +
+                "Discover: 6011 0000 0000 0012"
+            ));
         }
 
         // Formatar validade (MM/AA)
         if (validadeField != null) {
             validadeField.textProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal != null) {
-                    String digits = newVal.replaceAll("[^\\d]", "");
-                    if (digits.length() > 4) {
-                        validadeField.setText(oldVal);
-                        return;
+                if (newVal == null) {
+                    validadeField.setText("");
+                    return;
+                }
+                
+                // Se o usuário está apagando, permitir a operação
+                if (newVal.length() < oldVal.length()) {
+                    return;
+                }
+                
+                // Remove todos os caracteres não numéricos
+                String digits = newVal.replaceAll("[^\\d]", "");
+                
+                // Limita a 4 dígitos
+                if (digits.length() > 4) {
+                    digits = digits.substring(0, 4);
+                }
+                
+                // Formata a data apenas se houver dígitos
+                if (!digits.isEmpty()) {
+                    StringBuilder formatted = new StringBuilder();
+                    formatted.append(digits.substring(0, Math.min(2, digits.length())));
+                    
+                    if (digits.length() > 2) {
+                        formatted.append("/");
+                        formatted.append(digits.substring(2));
                     }
-                    if (digits.length() >= 2 && !newVal.contains("/")) {
-                        String formatted = digits.substring(0, 2) + "/" + digits.substring(2);
-                        if (!formatted.equals(newVal)) {
-                            validadeField.setText(formatted);
-                        }
+                    
+                    // Atualiza o texto apenas se for diferente para evitar loop infinito
+                    String formattedText = formatted.toString();
+                    if (!formattedText.equals(newVal)) {
+                        validadeField.setText(formattedText);
+                        // Posiciona o cursor no final
+                        validadeField.positionCaret(formattedText.length());
                     }
                 }
             });
@@ -111,13 +162,29 @@ public class PagamentoUIController implements Initializable {
         // Formatar CVV (apenas números, max 3 dígitos)
         if (cvvField != null) {
             cvvField.textProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal != null) {
-                    String digits = newVal.replaceAll("[^\\d]", "");
-                    if (digits.length() > 3) {
-                        cvvField.setText(oldVal);
-                    } else if (!digits.equals(newVal)) {
-                        cvvField.setText(digits);
-                    }
+                if (newVal == null) {
+                    cvvField.setText("");
+                    return;
+                }
+                
+                // Se o usuário está apagando, permitir a operação
+                if (newVal.length() < oldVal.length()) {
+                    return;
+                }
+                
+                // Remove todos os caracteres não numéricos
+                String digits = newVal.replaceAll("[^\\d]", "");
+                
+                // Limita a 3 dígitos
+                if (digits.length() > 3) {
+                    digits = digits.substring(0, 3);
+                }
+                
+                // Atualiza o texto apenas se for diferente para evitar loop infinito
+                if (!digits.equals(newVal)) {
+                    cvvField.setText(digits);
+                    // Posiciona o cursor no final
+                    cvvField.positionCaret(digits.length());
                 }
             });
         }
@@ -125,11 +192,23 @@ public class PagamentoUIController implements Initializable {
         // Validação do número do cartão
         if (numeroCartaoField != null) {
             numeroCartaoField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-                if (!newVal) {
+                if (!newVal) { // Quando o campo perde o foco
                     String numero = numeroCartaoField.getText().replaceAll("\\s", "");
-                    if (!numero.isEmpty() && !isValidCardNumber(numero)) {
-                        mostrarAlerta("Erro", "Número do cartão inválido", Alert.AlertType.ERROR);
-                        numeroCartaoField.setText("");
+                    if (!numero.isEmpty()) {
+                        if (numero.length() < 13 || numero.length() > 19) {
+                            mostrarAlerta("Erro", 
+                                "O número do cartão deve ter entre 13 e 19 dígitos.\n" +
+                                "Use um dos números de teste disponíveis no tooltip do campo.",
+                                Alert.AlertType.ERROR);
+                            numeroCartaoField.setText("");
+                        } else if (!isValidCardNumber(numero)) {
+                            mostrarAlerta("Erro", 
+                                "Número do cartão inválido.\n" +
+                                "O número não passou na validação do algoritmo de Luhn.\n" +
+                                "Use um dos números de teste disponíveis no tooltip do campo.",
+                                Alert.AlertType.ERROR);
+                            numeroCartaoField.setText("");
+                        }
                     }
                 }
             });
