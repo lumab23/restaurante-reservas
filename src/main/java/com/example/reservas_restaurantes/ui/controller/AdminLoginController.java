@@ -1,11 +1,18 @@
 package com.example.reservas_restaurantes.ui.controller;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.Stage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.example.reservas_restaurantes.service.AdminService;
+import com.example.reservas_restaurantes.utils.WindowUtils;
+
+import java.io.IOException;
 
 @Component
 public class AdminLoginController {
@@ -70,19 +77,21 @@ public class AdminLoginController {
     
     @FXML
     private void voltarInicio() {
-        System.out.println("Tentando voltar ao início...");
-        if (mainController != null) {
-            try {
-                mainController.voltarInicio();
-                System.out.println("Voltou ao início com sucesso");
-            } catch (Exception e) {
-                System.out.println("Erro ao voltar ao início: " + e.getMessage());
-                e.printStackTrace();
-                mostrarErro("Erro ao voltar: " + e.getMessage());
-            }
-        } else {
-            System.out.println("ERRO: Não foi possível voltar - MainController é null");
-            mostrarErro("Erro ao voltar: Controller não inicializado");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main-view.fxml"));
+            loader.setControllerFactory(mainController.getSpringContext()::getBean);
+            Parent root = loader.load();
+            
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            
+            Stage stage = (Stage) txtEmail.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Sistema de Reservas");
+            WindowUtils.configureWindowSize(stage);
+            stage.show();
+        } catch (IOException e) {
+            mostrarErro("Erro ao voltar: " + e.getMessage());
         }
     }
     

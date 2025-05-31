@@ -8,6 +8,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.springframework.context.ConfigurableApplicationContext;
 import com.example.reservas_restaurantes.ReservasRestaurantesApplication;
+import com.example.reservas_restaurantes.utils.WindowUtils;
 import org.springframework.boot.SpringApplication;
 
 public class MainApplication extends Application {
@@ -41,14 +42,14 @@ public class MainApplication extends Application {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main-view.fxml"));
             loader.setControllerFactory(springContext::getBean);
             
-            Scene scene = new Scene(loader.load(), 1200, 800);
+            Scene scene = new Scene(loader.load());
             scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             
             primaryStage.setTitle("Sistema de Reservas - Restaurante");
             primaryStage.setScene(scene);
-            primaryStage.setResizable(true);
-            primaryStage.setMinWidth(1000);
-            primaryStage.setMinHeight(700);
+            
+            // Configurar tamanho padrão da janela
+            WindowUtils.configureWindowSize(primaryStage);
             
             try {
                 primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon.png")));

@@ -2,6 +2,9 @@ package com.example.reservas_restaurantes.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.example.reservas_restaurantes.enums.StatusMesa;
 import com.example.reservas_restaurantes.enums.StatusReserva;
@@ -20,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,18 +35,22 @@ public class ReservaService {
     private final ReservaRepository reservaRepository;
     private final ClienteRepository clienteRepository;
     private final MesaRepository mesaRepository;
+    private final JdbcTemplate jdbcTemplate;
+    private static final Logger log = LoggerFactory.getLogger(ReservaService.class);
 
-    public static final LocalTime HORA_ABERTURA_RESTAURANTE = LocalTime.of(12, 0);
+    public static final LocalTime HORA_ABERTURA_RESTAURANTE = LocalTime.of(18, 0);
     public static final LocalTime HORA_FECHAMENTO_RESTAURANTE = LocalTime.of(23, 0);
     public static final int DURACAO_PADRAO_RESERVA_HORAS = 2;
-    private static final int INTERVALO_SLOTS_MINUTOS = 30;
+    public static final int INTERVALO_SLOTS_MINUTOS = 30;
 
     public ReservaService(ReservaRepository reservaRepository,
                          ClienteRepository clienteRepository,
-                         MesaRepository mesaRepository) {
+                         MesaRepository mesaRepository,
+                         JdbcTemplate jdbcTemplate) {
         this.reservaRepository = reservaRepository;
         this.clienteRepository = clienteRepository;
         this.mesaRepository = mesaRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     private void validarIdadeClienteParaReserva(Cliente cliente) throws BusinessRuleException {
@@ -354,6 +362,145 @@ public class ReservaService {
         } catch (SQLException e) {
             System.err.println("Erro ao deletar reserva: " + e.getMessage());
             throw new BusinessRuleException("Erro ao deletar reserva: " + e.getMessage(), e);
+        }
+    }
+
+    @Transactional
+    public boolean verificarDisponibilidadeMesa(int idMesa, LocalDateTime novaDataHora) throws BusinessRuleException {
+        try {
+            // Verificar se o horário está dentro do horário de funcionamento
+            if (novaDataHora.toLocalTime().isBefore(HORA_ABERTURA_RESTAURANTE) ||
+                novaDataHora.toLocalTime().plusHours(DURACAO_PADRAO_RESERVA_HORAS).isAfter(HORA_FECHAMENTO_RESTAURANTE.plusMinutes(1))) {
+                return false;
+            }
+
+            // Verificar se há conflitos de reserva usando a mesma lógica do buscarPorMesaEPeriodo
+            LocalDateTime fimPropostoReserva = novaDataHora.plusHours(DURACAO_PADRAO_RESERVA_HORAS);
+            List<Reserva> conflitos = reservaRepository.buscarPorMesaEPeriodo(idMesa, novaDataHora, fimPropostoReserva);
+            return conflitos.isEmpty();
+        } catch (Exception e) {
+            log.error("Erro ao verificar disponibilidade da mesa: {}", idMesa, e);
+            throw new BusinessRuleException("Erro ao verificar disponibilidade: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public void alterarDataReserva(int idReserva, LocalDateTime novaDataHora) throws BusinessRuleException {
+        try {
+            Reserva reserva = buscarReservaPorId(idReserva);
+            if (reserva == null) {
+                throw new BusinessRuleException("Reserva não encontrada");
+            }
+
+            if (reserva.getStatusReserva() != StatusReserva.CONFIRMADA) {
+                throw new BusinessRuleException("Apenas reservas confirmadas podem ser alteradas");
+            }
+
+            LocalDateTime agora = LocalDateTime.now();
+            long horasAteReserva = ChronoUnit.HOURS.between(agora, reserva.getDataHora());
+            if (horasAteReserva < 48) {
+                throw new BusinessRuleException("Não é possível alterar reservas com menos de 48 horas de antecedência");
+            }
+
+            String sql = "UPDATE reserva SET data_hora = ? WHERE id_reserva = ?";
+            jdbcTemplate.update(sql, novaDataHora, idReserva);
+            
+            log.info("Data da reserva {} alterada para {}", idReserva, novaDataHora);
+        } catch (Exception e) {
+            log.error("Erro ao alterar data da reserva: {}", idReserva, e);
+            throw new BusinessRuleException("Erro ao alterar data da reserva: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Atualiza o status de todas as mesas baseado nas reservas ativas para uma data específica.
+     * Mesas sem reservas ativas na data são marcadas como DISPONIVEL.
+     */
+    @Transactional
+    public void atualizarStatusMesasPorData(LocalDate data) {
+        try {
+            System.out.println("Iniciando atualização de status das mesas para a data: " + data);
+            List<Mesa> todasMesas = mesaRepository.buscarTodos();
+            
+            // Para cada horário de funcionamento do restaurante
+            LocalTime horarioAtual = HORA_ABERTURA_RESTAURANTE;
+            while (!horarioAtual.isAfter(HORA_FECHAMENTO_RESTAURANTE)) {
+                LocalDateTime inicioPeriodo = LocalDateTime.of(data, horarioAtual);
+                LocalDateTime fimPeriodo = inicioPeriodo.plusHours(DURACAO_PADRAO_RESERVA_HORAS);
+                
+                for (Mesa mesa : todasMesas) {
+                    try {
+                        List<Reserva> reservasAtivas = reservaRepository
+                            .buscarPorMesaEPeriodo(mesa.getIdMesa(), inicioPeriodo, fimPeriodo)
+                            .stream()
+                            .filter(r -> r.getStatusReserva() != StatusReserva.CANCELADA)
+                            .collect(Collectors.toList());
+
+                        if (!reservasAtivas.isEmpty()) {
+                            // Se tem reserva ativa neste horário, marca como RESERVADA
+                            if (mesa.getStatusMesa() != StatusMesa.RESERVADA) {
+                                mesaRepository.atualizarStatus(mesa.getIdMesa(), StatusMesa.RESERVADA);
+                                System.out.println("Mesa ID " + mesa.getIdMesa() + " atualizada para RESERVADA (com reserva às " + horarioAtual + ")");
+                            }
+                            // Se encontrou uma reserva ativa, não precisa verificar os outros horários
+                            break;
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Erro ao verificar reservas da mesa " + mesa.getIdMesa() + " para o horário " + horarioAtual + ": " + e.getMessage());
+                    }
+                }
+                
+                // Avança para o próximo horário
+                horarioAtual = horarioAtual.plusMinutes(INTERVALO_SLOTS_MINUTOS);
+            }
+            
+            // Se uma mesa não tem reservas em nenhum horário, marca como DISPONIVEL
+            for (Mesa mesa : todasMesas) {
+                boolean temReserva = false;
+                horarioAtual = HORA_ABERTURA_RESTAURANTE;
+                
+                while (!horarioAtual.isAfter(HORA_FECHAMENTO_RESTAURANTE)) {
+                    LocalDateTime inicioPeriodo = LocalDateTime.of(data, horarioAtual);
+                    LocalDateTime fimPeriodo = inicioPeriodo.plusHours(DURACAO_PADRAO_RESERVA_HORAS);
+                    
+                    try {
+                        List<Reserva> reservasAtivas = reservaRepository
+                            .buscarPorMesaEPeriodo(mesa.getIdMesa(), inicioPeriodo, fimPeriodo)
+                            .stream()
+                            .filter(r -> r.getStatusReserva() != StatusReserva.CANCELADA)
+                            .collect(Collectors.toList());
+
+                        if (!reservasAtivas.isEmpty()) {
+                            temReserva = true;
+                            break;
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Erro ao verificar reservas da mesa " + mesa.getIdMesa() + " para o horário " + horarioAtual + ": " + e.getMessage());
+                    }
+                    
+                    horarioAtual = horarioAtual.plusMinutes(INTERVALO_SLOTS_MINUTOS);
+                }
+                
+                if (!temReserva && mesa.getStatusMesa() != StatusMesa.DISPONIVEL) {
+                    mesaRepository.atualizarStatus(mesa.getIdMesa(), StatusMesa.DISPONIVEL);
+                    System.out.println("Mesa ID " + mesa.getIdMesa() + " atualizada para DISPONIVEL (sem reservas na data " + data + ")");
+                }
+            }
+            
+            System.out.println("Atualização de status das mesas para a data " + data + " concluída.");
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar mesas para atualização de status: " + e.getMessage());
+        }
+    }
+
+    public List<Reserva> listarReservasPorMesaEData(int idMesa, LocalDate data) {
+        try {
+            LocalDateTime inicioDia = data.atStartOfDay();
+            LocalDateTime fimDia = data.plusDays(1).atStartOfDay();
+            return reservaRepository.buscarPorMesaEPeriodo(idMesa, inicioDia, fimDia);
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar reservas da mesa " + idMesa + " para a data " + data + ": " + e.getMessage());
+            return List.of();
         }
     }
 }

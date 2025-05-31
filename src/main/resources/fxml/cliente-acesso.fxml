@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+
+<VBox alignment="CENTER" spacing="20.0" styleClass="container" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.reservas_restaurantes.ui.controller.ClienteAcessoController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+    </padding>
+
+    <Text styleClass="title" text="Acessar Minhas Reservas"/>
+    <Text styleClass="subtitle" text="Digite seu email e telefone para ver suas reservas"/>
+
+    <GridPane hgap="10" vgap="10" alignment="CENTER">
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="250.0"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+        </rowConstraints>
+
+        <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="txtEmail" promptText="Digite seu email" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+        <Label text="Telefone:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <TextField fx:id="txtTelefone" promptText="Digite seu telefone" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+        <Button fx:id="btnBuscarReservas" text="Buscar Reservas" onAction="#onBuscarReservas" 
+                styleClass="button-primary" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+    </GridPane>
+
+    <TableView fx:id="tableReservas" VBox.vgrow="ALWAYS" visible="false">
+        <columns>
+            <TableColumn fx:id="colIdReserva" text="ID" prefWidth="50"/>
+            <TableColumn fx:id="colDataHora" text="Data e Hora" prefWidth="150"/>
+            <TableColumn fx:id="colNumPessoas" text="Pessoas" prefWidth="80"/>
+            <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
+            <TableColumn fx:id="colAcoes" text="Ações" prefWidth="200"/>
+        </columns>
+    </TableView>
+
+    <Label fx:id="lblMensagem" styleClass="message-label" visible="false"/>
+
+    <HBox spacing="10" alignment="CENTER">
+        <Button fx:id="btnVoltar" text="Voltar" onAction="#onVoltar" styleClass="button-secondary"/>
+    </HBox>
+</VBox> 

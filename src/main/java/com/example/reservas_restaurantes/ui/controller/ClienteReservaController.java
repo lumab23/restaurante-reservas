@@ -20,6 +20,7 @@ import com.example.reservas_restaurantes.model.Reserva;
 import com.example.reservas_restaurantes.service.ClienteService;
 import com.example.reservas_restaurantes.service.MesaService;
 import com.example.reservas_restaurantes.service.ReservaService;
+import com.example.reservas_restaurantes.utils.WindowUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -28,6 +29,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class ClienteReservaController {
@@ -143,8 +146,38 @@ public class ClienteReservaController {
     
     private void carregarMesas() {
         try {
-            List<Mesa> mesas = mesaService.listarTodasMesas();
-            cbMesa.setItems(FXCollections.observableArrayList(mesas));
+            if (dpDataReserva.getValue() == null || cbHorario.getValue() == null) {
+                return;
+            }
+
+            LocalDateTime dataHoraReserva = LocalDateTime.of(
+                dpDataReserva.getValue(),
+                LocalTime.parse(cbHorario.getValue())
+            );
+
+            // Buscar todas as mesas
+            List<Mesa> todasMesas = mesaService.listarTodasMesas();
+            
+            // Filtrar mesas disponíveis para o horário selecionado
+            List<Mesa> mesasDisponiveis = todasMesas.stream()
+                .filter(mesa -> {
+                    try {
+                        // Verificar se a mesa tem capacidade suficiente
+                        if (mesa.getCapacidade() < spnNumPessoas.getValue()) {
+                            return false;
+                        }
+                        
+                        // Verificar disponibilidade no horário selecionado
+                        return reservaService.verificarDisponibilidadeMesa(mesa.getIdMesa(), dataHoraReserva);
+                    } catch (Exception e) {
+                        System.err.println("Erro ao verificar disponibilidade da mesa " + mesa.getIdMesa() + ": " + e.getMessage());
+                        return false;
+                    }
+                })
+                .collect(Collectors.toList());
+
+            // Atualizar o ComboBox com as mesas disponíveis
+            cbMesa.setItems(FXCollections.observableArrayList(mesasDisponiveis));
             
             // Configurar como as mesas são exibidas
             cbMesa.setCellFactory(param -> new ListCell<Mesa>() {
@@ -172,6 +205,14 @@ public class ClienteReservaController {
                     }
                 }
             });
+
+            // Se não houver mesas disponíveis, mostrar alerta
+            if (mesasDisponiveis.isEmpty()) {
+                mostrarAlerta("Aviso", 
+                    "Não há mesas disponíveis para " + spnNumPessoas.getValue() + " pessoas no horário selecionado.\n" +
+                    "Por favor, tente outro horário ou data.",
+                    Alert.AlertType.WARNING);
+            }
             
         } catch (Exception e) {
             mostrarAlerta("Erro", "Erro ao carregar mesas: " + e.getMessage(), Alert.AlertType.ERROR);
@@ -185,15 +226,55 @@ public class ClienteReservaController {
         }
         
         try {
-            // Criar cliente
-            Cliente cliente = new Cliente(
-                txtNome.getText().trim(),
-                txtTelefone.getText().trim(),
-                txtEmail.getText().trim(),
-                dpDataNascimento.getValue()
-            );
+            Cliente cliente;
             
-            clienteService.cadastrarCliente(cliente);
+            // Tentar buscar cliente existente, mas não lançar exceção se não encontrar
+            try {
+                Optional<Cliente> clienteExistente = clienteService.buscarClientePorEmail(txtEmail.getText().trim());
+                if (clienteExistente.isPresent()) {
+                    // Se o cliente existe, usar o cliente existente
+                    cliente = clienteExistente.get();
+                    
+                    // Atualizar os dados do cliente se necessário
+                    boolean dadosAtualizados = false;
+                    if (!cliente.getNome().equals(txtNome.getText().trim())) {
+                        cliente.setNome(txtNome.getText().trim());
+                        dadosAtualizados = true;
+                    }
+                    if (!cliente.getTelefone().equals(txtTelefone.getText().trim())) {
+                        cliente.setTelefone(txtTelefone.getText().trim());
+                        dadosAtualizados = true;
+                    }
+                    if (cliente.getDataNascimento() == null || !cliente.getDataNascimento().equals(dpDataNascimento.getValue())) {
+                        cliente.setDataNascimento(dpDataNascimento.getValue());
+                        dadosAtualizados = true;
+                    }
+                    
+                    // Se algum dado foi atualizado, salvar as alterações
+                    if (dadosAtualizados) {
+                        clienteService.atualizarCliente(cliente);
+                    }
+                } else {
+                    // Se o cliente não existe, criar um novo
+                    cliente = new Cliente(
+                        txtNome.getText().trim(),
+                        txtTelefone.getText().trim(),
+                        txtEmail.getText().trim(),
+                        dpDataNascimento.getValue()
+                    );
+                    clienteService.cadastrarCliente(cliente);
+                }
+            } catch (Exception e) {
+                // Se houver qualquer erro ao buscar o cliente, criar um novo
+                System.out.println("Erro ao buscar cliente existente, criando novo cliente: " + e.getMessage());
+                cliente = new Cliente(
+                    txtNome.getText().trim(),
+                    txtTelefone.getText().trim(),
+                    txtEmail.getText().trim(),
+                    dpDataNascimento.getValue()
+                );
+                clienteService.cadastrarCliente(cliente);
+            }
             
             // Criar reserva
             LocalDateTime dataHoraReserva = LocalDateTime.of(
@@ -341,10 +422,21 @@ public class ClienteReservaController {
     
     @FXML
     private void voltarInicio() {
-        if (mainController != null) {
-            mainController.voltarInicio();
-        } else {
-            mostrarAlerta("Erro", "Não foi possível voltar ao início: Controlador principal não encontrado.", Alert.AlertType.ERROR);
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main-view.fxml"));
+            loader.setControllerFactory(mainController.getSpringContext()::getBean);
+            Parent root = loader.load();
+            
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            
+            Stage stage = (Stage) txtNome.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Sistema de Reservas");
+            WindowUtils.configureWindowSize(stage);
+            stage.show();
+        } catch (IOException e) {
+            mostrarAlerta("Erro", "Erro ao voltar: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
     
