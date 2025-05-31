@@ -8,18 +8,13 @@ import com.example.reservas_restaurantes.service.ReservaService;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.DateCell;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -71,23 +66,20 @@ public class ClienteAcessoController {
                 cellData.getValue().getStatusReserva().toString()));
 
         // Configurar coluna de ações
+        setupColunaAcoes();
+    }
+
+    private void setupColunaAcoes() {
         colAcoes.setCellFactory(col -> new TableCell<>() {
             private final Button btnCancelar = new Button("Cancelar");
-            private final Button btnAlterar = new Button("Alterar Data");
-            private final HBox buttons = new HBox(5, btnCancelar, btnAlterar);
+            private final HBox buttons = new HBox(btnCancelar);
 
             {
+                buttons.setSpacing(5);
                 btnCancelar.getStyleClass().add("button-danger");
-                btnAlterar.getStyleClass().add("button-secondary");
-                
-                btnCancelar.setOnAction(event -> {
+                btnCancelar.setOnAction(e -> {
                     Reserva reserva = getTableView().getItems().get(getIndex());
                     cancelarReserva(reserva);
-                });
-                
-                btnAlterar.setOnAction(event -> {
-                    Reserva reserva = getTableView().getItems().get(getIndex());
-                    alterarDataReserva(reserva);
                 });
             }
 
@@ -98,16 +90,15 @@ public class ClienteAcessoController {
                     setGraphic(null);
                 } else {
                     Reserva reserva = getTableView().getItems().get(getIndex());
-                    boolean podeAlterar = podeAlterarReserva(reserva);
-                    btnCancelar.setDisable(!podeAlterar);
-                    btnAlterar.setDisable(!podeAlterar);
+                    boolean podeCancelar = podeCancelarReserva(reserva);
+                    btnCancelar.setDisable(!podeCancelar);
                     setGraphic(buttons);
                 }
             }
         });
     }
 
-    private boolean podeAlterarReserva(Reserva reserva) {
+    private boolean podeCancelarReserva(Reserva reserva) {
         if (reserva.getStatusReserva() != StatusReserva.CONFIRMADA) {
             return false;
         }
@@ -220,90 +211,6 @@ public class ClienteAcessoController {
                 } catch (Exception e) {
                     mostrarMensagem("Erro ao cancelar reserva: " + e.getMessage(), true);
                 }
-            }
-        });
-    }
-
-    private void alterarDataReserva(Reserva reserva) {
-        if (!podeAlterarReserva(reserva)) {
-            mostrarMensagem("Não é possível alterar esta reserva. O prazo de 48 horas já passou.", true);
-            return;
-        }
-
-        Dialog<LocalDateTime> dialog = new Dialog<>();
-        dialog.setTitle("Alterar Data da Reserva");
-        dialog.setHeaderText("Selecione a nova data e hora para sua reserva");
-
-        // Configurar botões
-        ButtonType confirmarButtonType = new ButtonType("Confirmar", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(confirmarButtonType, ButtonType.CANCEL);
-
-        // Criar campos de data e hora
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
-
-        DatePicker datePicker = new DatePicker();
-        datePicker.setValue(reserva.getDataHora().toLocalDate());
-        datePicker.setDayCellFactory(picker -> new DateCell() {
-            @Override
-            public void updateItem(LocalDate date, boolean empty) {
-                super.updateItem(date, empty);
-                if (date.isBefore(LocalDate.now().plusDays(2))) {
-                    setDisable(true);
-                    setStyle("-fx-background-color: #ffc0cb;");
-                }
-            }
-        });
-
-        // Criar ComboBox para horários disponíveis
-        ComboBox<LocalTime> horarioComboBox = new ComboBox<>();
-        
-        // Adicionar horários disponíveis (18:00 até 23:00, em intervalos de 30 minutos)
-        LocalTime horarioAtual = ReservaService.HORA_ABERTURA_RESTAURANTE;
-        while (!horarioAtual.plusHours(ReservaService.DURACAO_PADRAO_RESERVA_HORAS).isAfter(ReservaService.HORA_FECHAMENTO_RESTAURANTE)) {
-            horarioComboBox.getItems().add(horarioAtual);
-            horarioAtual = horarioAtual.plusMinutes(ReservaService.INTERVALO_SLOTS_MINUTOS);
-        }
-        
-        // Selecionar horário atual da reserva
-        horarioComboBox.setValue(reserva.getDataHora().toLocalTime());
-
-        grid.add(new Label("Data:"), 0, 0);
-        grid.add(datePicker, 1, 0);
-        grid.add(new Label("Horário:"), 0, 1);
-        grid.add(horarioComboBox, 1, 1);
-
-        dialog.getDialogPane().setContent(grid);
-
-        // Converter resultado para LocalDateTime
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == confirmarButtonType) {
-                LocalDate data = datePicker.getValue();
-                LocalTime horario = horarioComboBox.getValue();
-                
-                if (data != null && horario != null) {
-                    return LocalDateTime.of(data, horario);
-                }
-            }
-            return null;
-        });
-
-        // Mostrar diálogo e processar resultado
-        Optional<LocalDateTime> result = dialog.showAndWait();
-        result.ifPresent(novaDataHora -> {
-            try {
-                // Verificar se a nova data está disponível
-                if (reservaService.verificarDisponibilidadeMesa(reserva.getIdMesa(), novaDataHora)) {
-                    reservaService.alterarDataReserva(reserva.getIdReserva(), novaDataHora);
-                    mostrarMensagem("Data da reserva alterada com sucesso!", false);
-                    onBuscarReservas(); // Atualiza a lista
-                } else {
-                    mostrarMensagem("Horário não disponível. Por favor, escolha outro horário.", true);
-                }
-            } catch (Exception e) {
-                mostrarMensagem("Erro ao alterar data da reserva: " + e.getMessage(), true);
             }
         });
     }

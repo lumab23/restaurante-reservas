@@ -26,4 +26,6 @@ public interface ReservaRepository {
 
     List<Reserva> buscarPorMesaEPeriodo(int idMesa, LocalDateTime inicioPeriodo, LocalDateTime fimPeriodo) throws SQLException;
 
+    List<Reserva> buscarPorMesaEPeriodo(int idMesa, LocalDateTime inicioPeriodoProposto, LocalDateTime fimPeriodoProposto, Integer idReservaExcluir) throws SQLException;
+
 }
