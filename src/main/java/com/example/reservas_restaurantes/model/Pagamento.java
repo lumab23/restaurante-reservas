@@ -2,21 +2,19 @@ package com.example.reservas_restaurantes.model;
 
 import java.math.BigDecimal;
 
-import com.example.reservas_restaurantes.enums.MetodoPagamento;
-
 public class Pagamento {
     private int idPagamento;
     private int idReserva;
     private BigDecimal valor;
-    private MetodoPagamento metodoPagamento;
+    private String metodoPagamento;
 
     public Pagamento() {
     }
 
-    public Pagamento(int idReserva, BigDecimal valor, MetodoPagamento metodoPagamento) {
-        setIdReserva(idReserva);
-        setValor(valor);
-        setMetodoPagamento(metodoPagamento);
+    public Pagamento(int idReserva, BigDecimal valor) {
+        this.idReserva = idReserva;
+        this.valor = valor;
+        this.metodoPagamento = "CARTAO";
     }
 
     public int getIdPagamento() {
@@ -55,11 +53,11 @@ public class Pagamento {
         this.valor = valor;
     }
 
-    public MetodoPagamento getMetodoPagamento() {
+    public String getMetodoPagamento() {
         return metodoPagamento;
     }
 
-    public void setMetodoPagamento(MetodoPagamento metodoPagamento) {
+    public void setMetodoPagamento(String metodoPagamento) {
         if (metodoPagamento == null) {
             throw new IllegalArgumentException("Método de pagamento não pode ser nulo");
         }

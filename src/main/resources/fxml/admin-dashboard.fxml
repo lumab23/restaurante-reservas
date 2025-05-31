@@ -18,6 +18,12 @@
         <Button fx:id="btnLogout" text="Sair" styleClass="secondary-button"/>
     </HBox>
 
+    <!-- Painel de Estatísticas -->
+    <VBox styleClass="info-box" spacing="10">
+        <Label text="Estatísticas do Dia" styleClass="section-label"/>
+        <Label fx:id="lblEstatisticas" styleClass="info-text"/>
+    </VBox>
+
     <TabPane fx:id="tabPane" VBox.vgrow="ALWAYS">
         <!-- Aba Reservas -->
         <Tab text="Reservas" closable="false">

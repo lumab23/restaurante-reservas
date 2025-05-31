@@ -30,7 +30,7 @@ public class PagamentoCartaoDAO implements PagamentoCartaoRepository {
 
     @Override
     public void salvar(PagamentoCartao pagamentoCartao) throws SQLException {
-        String sql = "INSERT INTO PagamentoCartao (id_pagamento, numero_cartao, titular, validade, cvv) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO PagamentoCartao (id_pagamento, numeroCartao, titular, validade, cvv) VALUES (?, ?, ?, ?, ?)";
         Connection conn = null;
         PreparedStatement statement = null;
 
@@ -56,7 +56,7 @@ public class PagamentoCartaoDAO implements PagamentoCartaoRepository {
 
     @Override
     public Optional<PagamentoCartao> buscarPorIdPagamento(int idPagamento) throws SQLException {
-        String sql = "SELECT id_pagamento, numero_cartao, titular, validade, cvv FROM PagamentoCartao WHERE id_pagamento = ?";
+        String sql = "SELECT id_pagamento, numeroCartao, titular, validade, cvv FROM PagamentoCartao WHERE id_pagamento = ?";
         Connection conn = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
@@ -71,7 +71,7 @@ public class PagamentoCartaoDAO implements PagamentoCartaoRepository {
             if (rs.next()) {
                 pagamentoCartao = new PagamentoCartao();
                 pagamentoCartao.setIdPagamento(rs.getInt("id_pagamento"));
-                pagamentoCartao.setNumeroCartao(rs.getString("numero_cartao"));
+                pagamentoCartao.setNumeroCartao(rs.getString("numeroCartao"));
                 pagamentoCartao.setTitular(rs.getString("titular"));
                 pagamentoCartao.setValidade(rs.getDate("validade").toLocalDate());
                 pagamentoCartao.setCvv(rs.getString("cvv"));
@@ -89,7 +89,7 @@ public class PagamentoCartaoDAO implements PagamentoCartaoRepository {
 
     @Override
     public void atualizar(PagamentoCartao pagamentoCartao) throws SQLException {
-        String sql = "UPDATE PagamentoCartao SET numero_cartao = ?, titular = ?, validade = ?, cvv = ? WHERE id_pagamento = ?";
+        String sql = "UPDATE PagamentoCartao SET numeroCartao = ?, titular = ?, validade = ?, cvv = ? WHERE id_pagamento = ?";
         Connection conn = null;
         PreparedStatement statement = null;
 
