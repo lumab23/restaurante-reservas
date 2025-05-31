@@ -367,6 +367,11 @@ public class ReservaService {
 
     @Transactional
     public boolean verificarDisponibilidadeMesa(int idMesa, LocalDateTime novaDataHora) throws BusinessRuleException {
+        return verificarDisponibilidadeMesa(idMesa, novaDataHora, null);
+    }
+
+    @Transactional
+    public boolean verificarDisponibilidadeMesa(int idMesa, LocalDateTime novaDataHora, Integer idReservaExcluir) throws BusinessRuleException {
         try {
             // Verificar se o horário está dentro do horário de funcionamento
             if (novaDataHora.toLocalTime().isBefore(HORA_ABERTURA_RESTAURANTE) ||
@@ -376,7 +381,7 @@ public class ReservaService {
 
             // Verificar se há conflitos de reserva usando a mesma lógica do buscarPorMesaEPeriodo
             LocalDateTime fimPropostoReserva = novaDataHora.plusHours(DURACAO_PADRAO_RESERVA_HORAS);
-            List<Reserva> conflitos = reservaRepository.buscarPorMesaEPeriodo(idMesa, novaDataHora, fimPropostoReserva);
+            List<Reserva> conflitos = reservaRepository.buscarPorMesaEPeriodo(idMesa, novaDataHora, fimPropostoReserva, idReservaExcluir);
             return conflitos.isEmpty();
         } catch (Exception e) {
             log.error("Erro ao verificar disponibilidade da mesa: {}", idMesa, e);
@@ -400,6 +405,11 @@ public class ReservaService {
             long horasAteReserva = ChronoUnit.HOURS.between(agora, reserva.getDataHora());
             if (horasAteReserva < 48) {
                 throw new BusinessRuleException("Não é possível alterar reservas com menos de 48 horas de antecedência");
+            }
+
+            // Verificar disponibilidade excluindo a própria reserva
+            if (!verificarDisponibilidadeMesa(reserva.getIdMesa(), novaDataHora, idReserva)) {
+                throw new BusinessRuleException("Horário não disponível para esta mesa");
             }
 
             String sql = "UPDATE reserva SET data_hora = ? WHERE id_reserva = ?";

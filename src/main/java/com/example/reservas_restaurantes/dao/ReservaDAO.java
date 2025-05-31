@@ -282,18 +282,25 @@ public class ReservaDAO implements ReservaRepository {
 
     @Override
     public List<Reserva> buscarPorMesaEPeriodo(int idMesa, LocalDateTime inicioPeriodoProposto, LocalDateTime fimPeriodoProposto) throws SQLException {
-        // A duração da reserva existente ('ADDTIME(dataHora, ?)') não deve depender de ReservaService.
-        // Se a duração é padronizada para *todas* as reservas no banco (ex: 2 horas), essa regra de 2 horas
-        // pode ser uma constante global ou um valor passado para o DAO.
-        // Para este exemplo, manterei a string literal '02:00:00' na query, assumindo que esta é uma regra do DB.
+        return buscarPorMesaEPeriodo(idMesa, inicioPeriodoProposto, fimPeriodoProposto, null);
+    }
+
+    @Override
+    public List<Reserva> buscarPorMesaEPeriodo(int idMesa, LocalDateTime inicioPeriodoProposto, LocalDateTime fimPeriodoProposto, Integer idReservaExcluir) throws SQLException {
         String duracaoReservaSQL = "02:00:00"; // Assumindo uma duração padrão de 2 horas para todas as reservas
 
-        String sql = "SELECT id_reserva, id_cliente, id_mesa, dataHora, numPessoas, ocasiao, statusReserva, observacao " +
-                "FROM Reserva " +
-                "WHERE id_mesa = ? " +
-                "  AND statusReserva != 'CANCELADA' " +
-                "  AND dataHora < ? " +
-                "  AND ADDTIME(dataHora, ?) > ?";
+        StringBuilder sql = new StringBuilder(
+            "SELECT id_reserva, id_cliente, id_mesa, dataHora, numPessoas, ocasiao, statusReserva, observacao " +
+            "FROM Reserva " +
+            "WHERE id_mesa = ? " +
+            "  AND statusReserva != 'CANCELADA' " +
+            "  AND dataHora < ? " +
+            "  AND ADDTIME(dataHora, ?) > ?"
+        );
+
+        if (idReservaExcluir != null) {
+            sql.append(" AND id_reserva != ?");
+        }
 
         List<Reserva> reservasConflitantes = new ArrayList<>();
         Connection connection = null;
@@ -302,12 +309,17 @@ public class ReservaDAO implements ReservaRepository {
 
         try {
             connection = getConnection();
-            statement = connection.prepareStatement(sql);
+            statement = connection.prepareStatement(sql.toString());
 
-            statement.setInt(1, idMesa);
-            statement.setTimestamp(2, Timestamp.valueOf(fimPeriodoProposto));
-            statement.setString(3, duracaoReservaSQL); // Passa a string literal da duração
-            statement.setTimestamp(4, Timestamp.valueOf(inicioPeriodoProposto));
+            int paramIndex = 1;
+            statement.setInt(paramIndex++, idMesa);
+            statement.setTimestamp(paramIndex++, Timestamp.valueOf(fimPeriodoProposto));
+            statement.setString(paramIndex++, duracaoReservaSQL);
+            statement.setTimestamp(paramIndex++, Timestamp.valueOf(inicioPeriodoProposto));
+            
+            if (idReservaExcluir != null) {
+                statement.setInt(paramIndex, idReservaExcluir);
+            }
 
             rs = statement.executeQuery();
             while (rs.next()) {
