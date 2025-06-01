@@ -85,8 +85,70 @@ public class ClienteReservaController {
         cbOcasiao.setItems(FXCollections.observableArrayList(TipoOcasiao.values()));
         cbOcasiao.setValue(TipoOcasiao.JANTAR_A_DOIS);
         
-        // Carregar mesas disponíveis
-        carregarMesas();
+        // Configurar como as ocasiões são exibidas
+        cbOcasiao.setCellFactory(param -> new ListCell<TipoOcasiao>() {
+            @Override
+            protected void updateItem(TipoOcasiao ocasiao, boolean empty) {
+                super.updateItem(ocasiao, empty);
+                if (empty || ocasiao == null) {
+                    setText(null);
+                } else {
+                    setText(formatarOcasiao(ocasiao.name()));
+                }
+            }
+        });
+        
+        cbOcasiao.setButtonCell(new ListCell<TipoOcasiao>() {
+            @Override
+            protected void updateItem(TipoOcasiao ocasiao, boolean empty) {
+                super.updateItem(ocasiao, empty);
+                if (empty || ocasiao == null) {
+                    setText(null);
+                } else {
+                    setText(formatarOcasiao(ocasiao.name()));
+                }
+            }
+        });
+        
+        // Carregar todas as mesas inicialmente
+        try {
+            List<Mesa> todasMesas = mesaService.listarTodasMesas();
+            cbMesa.setItems(FXCollections.observableArrayList(todasMesas));
+            
+            // Configurar como as mesas são exibidas
+            cbMesa.setCellFactory(param -> new ListCell<Mesa>() {
+                @Override
+                protected void updateItem(Mesa mesa, boolean empty) {
+                    super.updateItem(mesa, empty);
+                    if (empty || mesa == null) {
+                        setText(null);
+                    } else {
+                        setText(String.format("Mesa %d - %s (Cap: %d)", 
+                            mesa.getIdMesa(), mesa.getLocalizacao(), mesa.getCapacidade()));
+                    }
+                }
+            });
+            
+            cbMesa.setButtonCell(new ListCell<Mesa>() {
+                @Override
+                protected void updateItem(Mesa mesa, boolean empty) {
+                    super.updateItem(mesa, empty);
+                    if (empty || mesa == null) {
+                        setText(null);
+                    } else {
+                        setText(String.format("Mesa %d - %s (Cap: %d)", 
+                            mesa.getIdMesa(), mesa.getLocalizacao(), mesa.getCapacidade()));
+                    }
+                }
+            });
+        } catch (Exception e) {
+            mostrarAlerta("Erro", "Erro ao carregar mesas: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+        
+        // Adicionar listeners para atualizar as mesas disponíveis quando a data ou horário mudarem
+        dpDataReserva.valueProperty().addListener((obs, oldVal, newVal) -> atualizarMesasDisponiveis());
+        cbHorario.valueProperty().addListener((obs, oldVal, newVal) -> atualizarMesasDisponiveis());
+        spnNumPessoas.valueProperty().addListener((obs, oldVal, newVal) -> atualizarMesasDisponiveis());
         
         btnConfirmarReserva.setOnAction(e -> confirmarReserva());
         btnVoltar.setOnAction(e -> voltarInicio());
@@ -138,13 +200,9 @@ public class ClienteReservaController {
                 }
             }
         });
-        
-        // Atualizar mesas quando mudar data/horário
-        dpDataReserva.valueProperty().addListener((obs, oldVal, newVal) -> carregarMesas());
-        cbHorario.valueProperty().addListener((obs, oldVal, newVal) -> carregarMesas());
     }
     
-    private void carregarMesas() {
+    private void atualizarMesasDisponiveis() {
         try {
             if (dpDataReserva.getValue() == null || cbHorario.getValue() == null) {
                 return;
@@ -177,34 +235,13 @@ public class ClienteReservaController {
                 .collect(Collectors.toList());
 
             // Atualizar o ComboBox com as mesas disponíveis
+            Mesa mesaSelecionada = cbMesa.getValue();
             cbMesa.setItems(FXCollections.observableArrayList(mesasDisponiveis));
             
-            // Configurar como as mesas são exibidas
-            cbMesa.setCellFactory(param -> new ListCell<Mesa>() {
-                @Override
-                protected void updateItem(Mesa mesa, boolean empty) {
-                    super.updateItem(mesa, empty);
-                    if (empty || mesa == null) {
-                        setText(null);
-                    } else {
-                        setText(String.format("Mesa %d - %s (Cap: %d)", 
-                            mesa.getIdMesa(), mesa.getLocalizacao(), mesa.getCapacidade()));
-                    }
-                }
-            });
-            
-            cbMesa.setButtonCell(new ListCell<Mesa>() {
-                @Override
-                protected void updateItem(Mesa mesa, boolean empty) {
-                    super.updateItem(mesa, empty);
-                    if (empty || mesa == null) {
-                        setText(null);
-                    } else {
-                        setText(String.format("Mesa %d - %s (Cap: %d)", 
-                            mesa.getIdMesa(), mesa.getLocalizacao(), mesa.getCapacidade()));
-                    }
-                }
-            });
+            // Se a mesa anteriormente selecionada ainda estiver disponível, mantê-la selecionada
+            if (mesaSelecionada != null && mesasDisponiveis.contains(mesaSelecionada)) {
+                cbMesa.setValue(mesaSelecionada);
+            }
 
             // Se não houver mesas disponíveis, mostrar alerta
             if (mesasDisponiveis.isEmpty()) {
@@ -215,7 +252,7 @@ public class ClienteReservaController {
             }
             
         } catch (Exception e) {
-            mostrarAlerta("Erro", "Erro ao carregar mesas: " + e.getMessage(), Alert.AlertType.ERROR);
+            mostrarAlerta("Erro", "Erro ao atualizar mesas disponíveis: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
     
@@ -228,45 +265,33 @@ public class ClienteReservaController {
         try {
             Cliente cliente;
             
-            // Tentar buscar cliente existente, mas não lançar exceção se não encontrar
-            try {
-                Optional<Cliente> clienteExistente = clienteService.buscarClientePorEmail(txtEmail.getText().trim());
-                if (clienteExistente.isPresent()) {
-                    // Se o cliente existe, usar o cliente existente
-                    cliente = clienteExistente.get();
-                    
-                    // Atualizar os dados do cliente se necessário
-                    boolean dadosAtualizados = false;
-                    if (!cliente.getNome().equals(txtNome.getText().trim())) {
-                        cliente.setNome(txtNome.getText().trim());
-                        dadosAtualizados = true;
-                    }
-                    if (!cliente.getTelefone().equals(txtTelefone.getText().trim())) {
-                        cliente.setTelefone(txtTelefone.getText().trim());
-                        dadosAtualizados = true;
-                    }
-                    if (cliente.getDataNascimento() == null || !cliente.getDataNascimento().equals(dpDataNascimento.getValue())) {
-                        cliente.setDataNascimento(dpDataNascimento.getValue());
-                        dadosAtualizados = true;
-                    }
-                    
-                    // Se algum dado foi atualizado, salvar as alterações
-                    if (dadosAtualizados) {
-                        clienteService.atualizarCliente(cliente);
-                    }
-                } else {
-                    // Se o cliente não existe, criar um novo
-                    cliente = new Cliente(
-                        txtNome.getText().trim(),
-                        txtTelefone.getText().trim(),
-                        txtEmail.getText().trim(),
-                        dpDataNascimento.getValue()
-                    );
-                    clienteService.cadastrarCliente(cliente);
+            // Tentar buscar cliente existente
+            Optional<Cliente> clienteExistente = clienteService.buscarClientePorEmail(txtEmail.getText().trim());
+            if (clienteExistente.isPresent()) {
+                // Se o cliente existe, usar o cliente existente
+                cliente = clienteExistente.get();
+                
+                // Atualizar os dados do cliente se necessário
+                boolean dadosAtualizados = false;
+                if (!cliente.getNome().equals(txtNome.getText().trim())) {
+                    cliente.setNome(txtNome.getText().trim());
+                    dadosAtualizados = true;
                 }
-            } catch (Exception e) {
-                // Se houver qualquer erro ao buscar o cliente, criar um novo
-                System.out.println("Erro ao buscar cliente existente, criando novo cliente: " + e.getMessage());
+                if (!cliente.getTelefone().equals(txtTelefone.getText().trim())) {
+                    cliente.setTelefone(txtTelefone.getText().trim());
+                    dadosAtualizados = true;
+                }
+                if (cliente.getDataNascimento() == null || !cliente.getDataNascimento().equals(dpDataNascimento.getValue())) {
+                    cliente.setDataNascimento(dpDataNascimento.getValue());
+                    dadosAtualizados = true;
+                }
+                
+                // Se algum dado foi atualizado, salvar as alterações
+                if (dadosAtualizados) {
+                    clienteService.atualizarCliente(cliente);
+                }
+            } else {
+                // Se o cliente não existe, criar um novo
                 cliente = new Cliente(
                     txtNome.getText().trim(),
                     txtTelefone.getText().trim(),
@@ -446,5 +471,20 @@ public class ClienteReservaController {
         alert.setHeaderText(null);
         alert.setContentText(mensagem);
         alert.showAndWait();
+    }
+    
+    private String formatarOcasiao(String ocasiao) {
+        String[] palavras = ocasiao.replace("_", " ").toLowerCase().split(" ");
+        StringBuilder resultado = new StringBuilder();
+        
+        for (String palavra : palavras) {
+            if (!palavra.isEmpty()) {
+                resultado.append(Character.toUpperCase(palavra.charAt(0)))
+                        .append(palavra.substring(1))
+                        .append(" ");
+            }
+        }
+        
+        return resultado.toString().trim();
     }
 }

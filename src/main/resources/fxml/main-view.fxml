@@ -4,26 +4,67 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.shape.Rectangle?>
 
-<VBox fx:id="mainContainer" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.reservas_restaurantes.ui.controller.MainController"
-      spacing="20" alignment="CENTER" styleClass="main-container">
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.reservas_restaurantes.ui.controller.MainController">
     
-    <padding>
-        <Insets top="40" right="20" bottom="40" left="20"/>
-    </padding>
+    <ScrollPane styleClass="main-scroll-pane" fitToWidth="true" vbarPolicy="ALWAYS" hbarPolicy="NEVER">
+        <StackPane styleClass="content-wrapper">
+            <VBox fx:id="mainContainer" spacing="20" alignment="CENTER" styleClass="main-container">
+                <padding>
+                    <Insets top="40" right="20" bottom="40" left="20"/>
+                </padding>
 
-    <VBox alignment="CENTER" spacing="30" styleClass="content-box">
-        <Label fx:id="lblTitulo" styleClass="title-label"/>
-        
-        <HBox spacing="20" alignment="CENTER">
-            <Button fx:id="btnNovaReserva" text="Nova Reserva" onAction="#abrirNovaReserva" styleClass="button-primary"/>
-            <Button fx:id="btnAcessarReserva" text="Acessar Minhas Reservas" onAction="#onAcessarReserva" styleClass="button-secondary"/>
-        </HBox>
-        
-        <VBox alignment="CENTER" spacing="10" styleClass="admin-section">
-            <Text text="Você é um administrador?" styleClass="admin-text"/>
-            <Hyperlink fx:id="btnAdminLogin" text="Log in" onAction="#abrirLoginAdmin" styleClass="admin-link"/>
-        </VBox>
-    </VBox>
-</VBox> 
+                <!-- Background Image with Overlay -->
+                <StackPane styleClass="background-container">
+                    <ImageView fitHeight="800" fitWidth="1200" preserveRatio="false">
+                        <image>
+                            <Image url="@/images/restaurant-bg.jpg"/>
+                        </image>
+                    </ImageView>
+                    <Rectangle styleClass="overlay"/>
+                </StackPane>
+
+                <!-- Main Content -->
+                <VBox alignment="CENTER" spacing="30" styleClass="content-box">
+                    <Label fx:id="lblTitulo" styleClass="title-label"/>
+                    
+                    <VBox alignment="CENTER" spacing="15" styleClass="welcome-section">
+                        <Label text="Bem-vindo ao Sistema de Reservas" styleClass="welcome-title"/>
+                        <Label text="Faça sua reserva de forma rápida e fácil" styleClass="welcome-subtitle"/>
+                    </VBox>
+                    
+                    <HBox spacing="20" alignment="CENTER" styleClass="button-container">
+                        <Button fx:id="btnNovaReserva" text="Nova Reserva" onAction="#abrirNovaReserva" styleClass="button-primary">
+                            <graphic>
+                                <ImageView fitHeight="24" fitWidth="24" preserveRatio="true">
+                                    <image>
+                                        <Image url="@/images/calendar-icon.png"/>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnAcessarReserva" text="Acessar Minhas Reservas" onAction="#onAcessarReserva" styleClass="button-secondary">
+                            <graphic>
+                                <ImageView fitHeight="24" fitWidth="24" preserveRatio="true">
+                                    <image>
+                                        <Image url="@/images/reservation-icon.png"/>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                    </HBox>
+                    
+                    <VBox alignment="CENTER" spacing="10" styleClass="admin-section">
+                        <Text text="Você é um administrador?" styleClass="admin-text"/>
+                        <Hyperlink fx:id="btnAdminLogin" text="Log in" onAction="#abrirLoginAdmin" styleClass="admin-link"/>
+                    </VBox>
+                </VBox>
+            </VBox>
+        </StackPane>
+    </ScrollPane>
+</StackPane> 

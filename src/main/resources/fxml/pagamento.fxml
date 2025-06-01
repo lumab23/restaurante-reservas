@@ -1,93 +1,142 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 
-
-<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.example.reservas_restaurantes.ui.controller.PagamentoUIController"
-      spacing="20" styleClass="container">
+      styleClass="main-container" spacing="20" alignment="CENTER">
+    
     <padding>
-        <Insets top="30" right="40" bottom="30" left="40"/>
+        <Insets top="40" right="40" bottom="40" left="40"/>
     </padding>
 
-    <!-- Título -->
-    <Text text="Pagamento da Reserva" styleClass="title" />
-    
-    <!-- Resumo da Reserva -->
-    <VBox styleClass="info-box" spacing="10">
-        <Text text="Detalhes da Reserva" styleClass="section-title" />
-        <GridPane vgap="8" hgap="15">
-            <columnConstraints>
-                <ColumnConstraints minWidth="120" prefWidth="120" />
-                <ColumnConstraints hgrow="ALWAYS" />
-            </columnConstraints>
-            
-            <Label text="Cliente:" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="info-label"/>
-            <Text fx:id="clienteText" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="info-text"/>
-            
-            <Label text="Mesa:" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="info-label"/>
-            <Text fx:id="mesaText" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="info-text"/>
-            
-            <Label text="Data/Hora:" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="info-label"/>
-            <Text fx:id="dataHoraText" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="info-text"/>
-            
-            <Label text="Número de Pessoas:" GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="info-label"/>
-            <Text fx:id="numPessoasText" GridPane.columnIndex="1" GridPane.rowIndex="3" styleClass="info-text"/>
-            
-            <Label text="Ocasiao:" GridPane.columnIndex="0" GridPane.rowIndex="4" styleClass="info-label"/>
-            <Text fx:id="ocasiaoText" GridPane.columnIndex="1" GridPane.rowIndex="4" styleClass="info-text"/>
-            
-            <Label text="Status:" GridPane.columnIndex="0" GridPane.rowIndex="5" styleClass="info-label"/>
-            <Text fx:id="statusText" GridPane.columnIndex="1" GridPane.rowIndex="5" styleClass="info-text"/>
-        </GridPane>
-    </VBox>
-
-    <!-- Valor Total -->
-    <VBox styleClass="price-box" alignment="CENTER">
-        <Text text="Valor Total" styleClass="price-label"/>
-        <Text fx:id="valorTotalText" styleClass="price-value"/>
-    </VBox>
-
-    <!-- Dados do Cartão -->
-    <VBox styleClass="payment-box" spacing="15">
-        <Text text="Pagamento via Cartão" styleClass="section-title" />
+    <!-- Main Content -->
+    <VBox alignment="CENTER" spacing="30" styleClass="content-box">
+        <Label text="Pagamento da Reserva" styleClass="welcome-title"/>
+        <Label text="Confirme os detalhes e realize o pagamento" styleClass="welcome-subtitle"/>
         
-        <GridPane vgap="12" hgap="15">
-            <columnConstraints>
-                <ColumnConstraints minWidth="150" prefWidth="150" />
-                <ColumnConstraints hgrow="ALWAYS" />
-            </columnConstraints>
+        <!-- Resumo da Reserva -->
+        <VBox styleClass="info-box" spacing="15">
+            <Label text="Resumo da Reserva" styleClass="section-label"/>
             
-            <Label text="Número do Cartão:" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="form-label"/>
-            <TextField fx:id="numeroCartaoField" promptText="0000 0000 0000 0000" 
-                      prefWidth="300.0" GridPane.columnIndex="1" GridPane.rowIndex="0" 
-                      styleClass="card-input"/>
-            
-            <Label text="Nome do Titular:" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="form-label"/>
-            <TextField fx:id="titularField" promptText="Nome como no cartão" 
-                      prefWidth="300.0" GridPane.columnIndex="1" GridPane.rowIndex="1" 
-                      styleClass="card-input"/>
-            
-            <Label text="Validade (MM/AA):" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="form-label"/>
-            <TextField fx:id="validadeField" promptText="MM/AA" 
-                      prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2" 
-                      styleClass="card-input"/>
-            
-            <Label text="CVV:" GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="form-label"/>
-            <TextField fx:id="cvvField" promptText="123" 
-                      prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="3" 
-                      styleClass="card-input"/>
-        </GridPane>
-    </VBox>
+            <!-- Dados do Cliente -->
+            <VBox spacing="10" styleClass="payment-section">
+                <Label text="Informações do Cliente" styleClass="subsection-label"/>
+                <GridPane vgap="8" hgap="15">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="120" prefWidth="120"/>
+                        <ColumnConstraints minWidth="200" prefWidth="200"/>
+                    </columnConstraints>
+                    
+                    <Label text="Nome Completo:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <Text fx:id="clienteText" styleClass="info-text" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                </GridPane>
+            </VBox>
 
-    <!-- Botões -->
-    <HBox spacing="15" alignment="CENTER_RIGHT">
-        <Button text="Cancelar" onAction="#cancelarPagamento" styleClass="button-secondary" />
-        <Button text="Confirmar Pagamento" onAction="#confirmarPagamento" styleClass="button-primary" />
-    </HBox>
+            <!-- Dados da Mesa -->
+            <VBox spacing="10" styleClass="payment-section">
+                <Label text="Detalhes da Mesa" styleClass="subsection-label"/>
+                <GridPane vgap="8" hgap="15">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="120" prefWidth="120"/>
+                        <ColumnConstraints minWidth="200" prefWidth="200"/>
+                    </columnConstraints>
+                    
+                    <Label text="Mesa Selecionada:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <Text fx:id="mesaText" styleClass="info-text" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    
+                    <Label text="Capacidade da Mesa:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <Text fx:id="numPessoasText" styleClass="info-text" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                </GridPane>
+            </VBox>
+
+            <!-- Dados da Reserva -->
+            <VBox spacing="10" styleClass="payment-section">
+                <Label text="Detalhes da Reserva" styleClass="subsection-label"/>
+                <GridPane vgap="8" hgap="15">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="120" prefWidth="120"/>
+                        <ColumnConstraints minWidth="200" prefWidth="200"/>
+                    </columnConstraints>
+                    
+                    <Label text="Data e Horário:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <Text fx:id="dataHoraText" styleClass="info-text" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    
+                    <Label text="Tipo de Ocasiao:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <Text fx:id="ocasiaoText" styleClass="info-text" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    
+                    <Label text="Status da Reserva:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <Text fx:id="statusText" styleClass="info-text" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                </GridPane>
+            </VBox>
+        </VBox>
+
+        <!-- Valor Total -->
+        <VBox styleClass="price-box" alignment="CENTER" spacing="10">
+            <Label text="Valor Total da Reserva" styleClass="section-label"/>
+            <Text fx:id="valorTotalText" styleClass="price-value"/>
+            <Label text="* Valor por pessoa: R$ 50,00" styleClass="info-text"/>
+        </VBox>
+
+        <!-- Dados do Cartão -->
+        <VBox styleClass="info-box" spacing="15">
+            <Label text="Informações de Pagamento" styleClass="section-label"/>
+            <Label text="Preencha os dados do seu cartão de crédito" styleClass="welcome-subtitle"/>
+            
+            <GridPane vgap="12" hgap="15">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="120" prefWidth="120"/>
+                    <ColumnConstraints minWidth="200" prefWidth="200"/>
+                </columnConstraints>
+                
+                <Label text="Número do Cartão:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <TextField fx:id="numeroCartaoField" promptText="0000 0000 0000 0000" 
+                        styleClass="card-input" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                
+                <Label text="Nome do Titular:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <TextField fx:id="titularField" promptText="Nome como no cartão" 
+                        styleClass="card-input" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                
+                <HBox spacing="15" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                    <VBox HBox.hgrow="ALWAYS">
+                        <Label text="Validade (MM/AA):" styleClass="form-label"/>
+                        <TextField fx:id="validadeField" promptText="MM/AA" 
+                                styleClass="card-input"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS">
+                        <Label text="CVV:" styleClass="form-label"/>
+                        <TextField fx:id="cvvField" promptText="123" 
+                                styleClass="card-input"/>
+                    </VBox>
+                </HBox>
+            </GridPane>
+        </VBox>
+
+        <!-- Botões -->
+        <HBox spacing="20" alignment="CENTER" styleClass="button-container">
+            <Button text="Confirmar Pagamento" onAction="#confirmarPagamento" styleClass="button-primary">
+                <graphic>
+                    <ImageView fitHeight="24" fitWidth="24" preserveRatio="true" styleClass="button-icon-white">
+                        <image>
+                            <Image url="@/images/payment-icon.png"/>
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Button text="Cancelar" onAction="#cancelarPagamento" styleClass="button-secondary">
+                <graphic>
+                    <ImageView fitHeight="24" fitWidth="24" preserveRatio="true" styleClass="button-icon-white">
+                        <image>
+                            <Image url="@/images/cancel-icon.png"/>
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
+        </HBox>
+    </VBox>
 </VBox>

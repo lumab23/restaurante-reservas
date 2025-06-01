@@ -3,30 +3,81 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.shape.Rectangle?>
 
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.reservas_restaurantes.ui.controller.AdminLoginController"
-      spacing="20" alignment="CENTER" styleClass="main-container">
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.reservas_restaurantes.ui.controller.AdminLoginController">
     
-    <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
-    </padding>
+    <ScrollPane styleClass="main-scroll-pane" fitToWidth="true" vbarPolicy="ALWAYS" hbarPolicy="NEVER">
+        <StackPane styleClass="content-wrapper">
+            <VBox fx:id="mainContainer" spacing="30" alignment="CENTER" styleClass="main-container">
+                <padding>
+                    <Insets top="40" right="20" bottom="40" left="20"/>
+                </padding>
 
-    <Label text="Login Administrativo" styleClass="title-label"/>
-    
-    <GridPane vgap="10" hgap="10" alignment="CENTER">
-        <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-        <TextField fx:id="txtEmail" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-        
-        <Label text="Senha:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-        <PasswordField fx:id="txtSenha" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-    </GridPane>
-    
-    <Label fx:id="lblErro" styleClass="error-label" visible="false"/>
-    
-    <HBox spacing="20" alignment="CENTER">
-        <Button fx:id="btnLogin" text="Entrar" styleClass="primary-button"/>
-        <Button fx:id="btnVoltar" text="Voltar" styleClass="secondary-button"/>
-    </HBox>
-    
-</VBox> 
+                <!-- Background Image with Overlay -->
+                <StackPane styleClass="background-container">
+                    <ImageView fitHeight="800" fitWidth="1200" preserveRatio="false">
+                        <image>
+                            <Image url="@/images/restaurant-bg.jpg"/>
+                        </image>
+                    </ImageView>
+                    <Rectangle styleClass="overlay"/>
+                </StackPane>
+
+                <!-- Main Content -->
+                <VBox alignment="CENTER" spacing="30" styleClass="content-box">
+                    <Label text="Login Administrativo" styleClass="welcome-title"/>
+                    <Label text="Acesse o painel de administração do sistema" styleClass="welcome-subtitle"/>
+                    
+                    <!-- Formulário de Login -->
+                    <VBox styleClass="info-box" spacing="20">
+                        <Label text="Dados de Acesso" styleClass="section-label"/>
+                        <GridPane vgap="15" hgap="20" alignment="CENTER">
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="150" prefWidth="150"/>
+                                <ColumnConstraints minWidth="300" prefWidth="300"/>
+                            </columnConstraints>
+                            
+                            <Label text="Email:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <TextField fx:id="txtEmail" promptText="admin@restaurante.com" styleClass="card-input" 
+                                     GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            
+                            <Label text="Senha:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <PasswordField fx:id="txtSenha" promptText="Digite sua senha" styleClass="card-input" 
+                                         GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            
+                            <Label fx:id="lblErro" styleClass="message-label error" visible="false" 
+                                   GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            
+                            <HBox spacing="20" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                <Button fx:id="btnLogin" text="Entrar" onAction="#realizarLogin" styleClass="button-primary">
+                                    <graphic>
+                                        <ImageView fitHeight="24" fitWidth="24" preserveRatio="true" styleClass="button-icon-white">
+                                            <image>
+                                                <Image url="@/images/login-icon.png"/>
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                                <Button fx:id="btnVoltar" text="Voltar" onAction="#voltarInicio" styleClass="button-secondary">
+                                    <graphic>
+                                        <ImageView fitHeight="24" fitWidth="24" preserveRatio="true" styleClass="button-icon-white">
+                                            <image>
+                                                <Image url="@/images/back-icon.png"/>
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                            </HBox>
+                        </GridPane>
+                    </VBox>
+                </VBox>
+            </VBox>
+        </StackPane>
+    </ScrollPane>
+</StackPane> 

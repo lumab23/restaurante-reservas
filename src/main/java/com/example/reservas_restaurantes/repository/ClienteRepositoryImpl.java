@@ -127,7 +127,7 @@ public class ClienteRepositoryImpl implements ClienteRepository {
     public Optional<Cliente> buscarPorEmail(String email) throws BusinessRuleException {
         try {
             String sql = "SELECT * FROM cliente WHERE email = ?";
-            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+            List<Cliente> resultados = jdbcTemplate.query(sql, (rs, rowNum) -> {
                 Cliente cliente = new Cliente();
                 cliente.setIdCliente(rs.getInt("id_cliente"));
                 cliente.setNome(rs.getString("nome"));
@@ -138,7 +138,10 @@ public class ClienteRepositoryImpl implements ClienteRepository {
                     cliente.setDataNascimento(dataNascimento.toLocalDate());
                 }
                 return cliente;
-            }, email));
+            }, email);
+
+            // Retorna o primeiro resultado se existir, ou Optional.empty() se não existir
+            return resultados.isEmpty() ? Optional.empty() : Optional.of(resultados.get(0));
         } catch (Exception e) {
             log.error("Erro ao buscar cliente por email: {}", email, e);
             throw new BusinessRuleException("Erro ao buscar cliente: " + e.getMessage());

@@ -1,52 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.shape.Rectangle?>
 
-<VBox alignment="CENTER" spacing="20.0" styleClass="container" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.reservas_restaurantes.ui.controller.ClienteAcessoController">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-    </padding>
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.reservas_restaurantes.ui.controller.ClienteAcessoController">
+    
+    <ScrollPane styleClass="main-scroll-pane" fitToWidth="true" vbarPolicy="ALWAYS" hbarPolicy="NEVER">
+        <StackPane styleClass="content-wrapper">
+            <VBox fx:id="mainContainer" spacing="30" alignment="CENTER" styleClass="main-container">
+                <padding>
+                    <Insets top="40" right="20" bottom="40" left="20"/>
+                </padding>
 
-    <Text styleClass="title" text="Acessar Minhas Reservas"/>
-    <Text styleClass="subtitle" text="Digite seu email e telefone para ver suas reservas"/>
+                <!-- Background Image with Overlay -->
+                <StackPane styleClass="background-container">
+                    <ImageView fitHeight="800" fitWidth="1200" preserveRatio="false">
+                        <image>
+                            <Image url="@/images/restaurant-bg.jpg"/>
+                        </image>
+                    </ImageView>
+                    <Rectangle styleClass="overlay"/>
+                </StackPane>
 
-    <GridPane hgap="10" vgap="10" alignment="CENTER">
-        <columnConstraints>
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="250.0"/>
-        </columnConstraints>
-        <rowConstraints>
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-        </rowConstraints>
-
-        <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-        <TextField fx:id="txtEmail" promptText="Digite seu email" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-
-        <Label text="Telefone:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-        <TextField fx:id="txtTelefone" promptText="Digite seu telefone" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-
-        <Button fx:id="btnBuscarReservas" text="Buscar Reservas" onAction="#onBuscarReservas" 
-                styleClass="button-primary" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-    </GridPane>
-
-    <TableView fx:id="tableReservas" VBox.vgrow="ALWAYS" visible="false">
-        <columns>
-            <TableColumn fx:id="colIdReserva" text="ID" prefWidth="50"/>
-            <TableColumn fx:id="colDataHora" text="Data e Hora" prefWidth="150"/>
-            <TableColumn fx:id="colNumPessoas" text="Pessoas" prefWidth="80"/>
-            <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
-            <TableColumn fx:id="colAcoes" text="Ações" prefWidth="200"/>
-        </columns>
-    </TableView>
-
-    <Label fx:id="lblMensagem" styleClass="message-label" visible="false"/>
-
-    <HBox spacing="10" alignment="CENTER">
-        <Button fx:id="btnVoltar" text="Voltar" onAction="#onVoltar" styleClass="button-secondary"/>
-    </HBox>
-</VBox> 
+                <!-- Main Content -->
+                <VBox alignment="CENTER" spacing="30" styleClass="content-box">
+                    <Label text="Minhas Reservas" styleClass="welcome-title"/>
+                    <Label text="Acesse suas reservas usando seu email e telefone" styleClass="welcome-subtitle"/>
+                    
+                    <!-- Formulário de Acesso -->
+                    <VBox styleClass="info-box" spacing="15">
+                        <Label text="Dados de Acesso" styleClass="section-label"/>
+                        <GridPane vgap="15" hgap="20" alignment="CENTER">
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="150" prefWidth="150"/>
+                                <ColumnConstraints minWidth="300" prefWidth="300"/>
+                            </columnConstraints>
+                            
+                            <Label text="Email:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <TextField fx:id="txtEmail" promptText="seu@email.com" styleClass="card-input" 
+                                     GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            
+                            <Label text="Telefone:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <TextField fx:id="txtTelefone" promptText="(00) 00000-0000" styleClass="card-input" 
+                                     GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            
+                            <Button fx:id="btnBuscarReservas" text="Buscar Reservas" onAction="#onBuscarReservas" 
+                                   styleClass="button-primary" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                <graphic>
+                                    <ImageView fitHeight="24" fitWidth="24" preserveRatio="true" styleClass="button-icon-white">
+                                        <image>
+                                            <Image url="@/images/search-icon.png"/>
+                                        </image>
+                                    </ImageView>
+                                </graphic>
+                            </Button>
+                        </GridPane>
+                    </VBox>
+                    
+                    <!-- Lista de Reservas -->
+                    <VBox styleClass="info-box" spacing="15" VBox.vgrow="ALWAYS">
+                        <Label text="Minhas Reservas" styleClass="section-label"/>
+                        <TableView fx:id="tableReservas" VBox.vgrow="ALWAYS" styleClass="modern-table">
+                            <columns>
+                                <TableColumn fx:id="colIdReserva" text="ID" prefWidth="50"/>
+                                <TableColumn fx:id="colDataHora" text="Data e Hora" prefWidth="150"/>
+                                <TableColumn fx:id="colNumPessoas" text="Pessoas" prefWidth="80"/>
+                                <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
+                                <TableColumn fx:id="colAcoes" text="Ações" prefWidth="200"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                    
+                    <!-- Mensagem de Status -->
+                    <Label fx:id="lblMensagem" styleClass="message-label" visible="false"/>
+                    
+                    <!-- Botões -->
+                    <HBox spacing="20" alignment="CENTER" styleClass="button-container">
+                        <Button fx:id="btnVoltar" text="Voltar" onAction="#onVoltar" styleClass="button-secondary">
+                            <graphic>
+                                <ImageView fitHeight="24" fitWidth="24" preserveRatio="true" styleClass="button-icon-white">
+                                    <image>
+                                        <Image url="@/images/back-icon.png"/>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </StackPane>
+    </ScrollPane>
+</StackPane> 

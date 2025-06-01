@@ -3,61 +3,123 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.shape.Rectangle?>
 
-<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.reservas_restaurantes.ui.controller.ClienteReservaController"
-      styleClass="main-container">
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.reservas_restaurantes.ui.controller.ClienteReservaController">
     
-    <VBox fx:id="containerReserva" spacing="20">
-        <padding>
-            <Insets top="20" right="20" bottom="20" left="20"/>
-        </padding>
+    <ScrollPane styleClass="main-scroll-pane" fitToWidth="true" vbarPolicy="ALWAYS" hbarPolicy="NEVER">
+        <StackPane styleClass="content-wrapper">
+            <VBox fx:id="mainContainer" spacing="30" alignment="CENTER" styleClass="main-container">
+                <padding>
+                    <Insets top="40" right="20" bottom="40" left="20"/>
+                </padding>
 
-        <Label text="Nova Reserva" styleClass="title-label"/>
-        
-        <GridPane vgap="15" hgap="10">
-            <!-- Dados do Cliente -->
-            <Label text="Dados do Cliente" styleClass="section-label" 
-                   GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2"/>
-            
-            <Label text="Nome:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <TextField fx:id="txtNome" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-            
-            <Label text="Telefone:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-            <TextField fx:id="txtTelefone" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-            
-            <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-            <TextField fx:id="txtEmail" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-            
-            <Label text="Data de Nascimento:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-            <DatePicker fx:id="dpDataNascimento" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-            
-            <!-- Dados da Reserva -->
-            <Label text="Dados da Reserva" styleClass="section-label" 
-                   GridPane.columnIndex="0" GridPane.rowIndex="5" GridPane.columnSpan="2"/>
-            
-            <Label text="Data:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-            <DatePicker fx:id="dpDataReserva" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-            
-            <Label text="Horário:" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
-            <ComboBox fx:id="cbHorario" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
-            
-            <Label text="Número de Pessoas:" GridPane.columnIndex="0" GridPane.rowIndex="8"/>
-            <Spinner fx:id="spnNumPessoas" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
-            
-            <Label text="Ocasiao:" GridPane.columnIndex="0" GridPane.rowIndex="9"/>
-            <ComboBox fx:id="cbOcasiao" GridPane.columnIndex="1" GridPane.rowIndex="9"/>
-            
-            <Label text="Mesa:" GridPane.columnIndex="0" GridPane.rowIndex="10"/>
-            <ComboBox fx:id="cbMesa" GridPane.columnIndex="1" GridPane.rowIndex="10"/>
-            
-            <Label text="Observação:" GridPane.columnIndex="0" GridPane.rowIndex="11"/>
-            <TextArea fx:id="txtObservacao" GridPane.columnIndex="1" GridPane.rowIndex="11"/>
-        </GridPane>
-        
-        <HBox spacing="20" alignment="CENTER">
-            <Button fx:id="btnConfirmarReserva" text="Confirmar Reserva" styleClass="primary-button"/>
-            <Button fx:id="btnVoltar" text="Voltar" styleClass="secondary-button"/>
-        </HBox>
-    </VBox>
-</ScrollPane> 
+                <!-- Background Image with Overlay -->
+                <StackPane styleClass="background-container">
+                    <ImageView fitHeight="800" fitWidth="1200" preserveRatio="false">
+                        <image>
+                            <Image url="@/images/restaurant-bg.jpg"/>
+                        </image>
+                    </ImageView>
+                    <Rectangle styleClass="overlay"/>
+                </StackPane>
+
+                <!-- Main Content -->
+                <VBox alignment="CENTER" spacing="30" styleClass="content-box">
+                    <Label text="Nova Reserva" styleClass="welcome-title"/>
+                    <Label text="Preencha os dados para fazer sua reserva" styleClass="welcome-subtitle"/>
+                    
+                    <!-- Dados do Cliente -->
+                    <VBox styleClass="info-box" spacing="15">
+                        <Label text="Dados do Cliente" styleClass="section-label"/>
+                        <GridPane vgap="15" hgap="20" alignment="CENTER">
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="150" prefWidth="150"/>
+                                <ColumnConstraints minWidth="300" prefWidth="300"/>
+                            </columnConstraints>
+                            
+                            <Label text="Nome:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <TextField fx:id="txtNome" promptText="Digite seu nome completo" styleClass="card-input" 
+                                     GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            
+                            <Label text="Telefone:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <TextField fx:id="txtTelefone" promptText="(00) 00000-0000" styleClass="card-input" 
+                                     GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            
+                            <Label text="Email:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                            <TextField fx:id="txtEmail" promptText="seu@email.com" styleClass="card-input" 
+                                     GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            
+                            <Label text="Data de Nascimento:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                            <DatePicker fx:id="dpDataNascimento" styleClass="card-input" 
+                                      GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                        </GridPane>
+                    </VBox>
+                    
+                    <!-- Dados da Reserva -->
+                    <VBox styleClass="info-box" spacing="15">
+                        <Label text="Dados da Reserva" styleClass="section-label"/>
+                        <GridPane vgap="15" hgap="20" alignment="CENTER">
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="150" prefWidth="150"/>
+                                <ColumnConstraints minWidth="300" prefWidth="300"/>
+                            </columnConstraints>
+                            
+                            <Label text="Data:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <DatePicker fx:id="dpDataReserva" styleClass="card-input" 
+                                      GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            
+                            <Label text="Horário:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <ComboBox fx:id="cbHorario" promptText="Selecione o horário" styleClass="card-input" 
+                                     GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            
+                            <Label text="Número de Pessoas:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                            <Spinner fx:id="spnNumPessoas" min="1" max="20" initialValue="2" 
+                                    styleClass="card-input" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            
+                            <Label text="Ocasiao:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                            <ComboBox fx:id="cbOcasiao" promptText="Selecione a ocasião" styleClass="card-input" 
+                                     GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                            
+                            <Label text="Mesa:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                            <ComboBox fx:id="cbMesa" promptText="Selecione a mesa" styleClass="card-input" 
+                                     GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                            
+                            <Label text="Observação:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                            <TextArea fx:id="txtObservacao" promptText="Digite alguma observação especial" 
+                                     styleClass="card-input" prefRowCount="3" wrapText="true" 
+                                     GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                        </GridPane>
+                    </VBox>
+                    
+                    <!-- Botões -->
+                    <HBox spacing="20" alignment="CENTER" styleClass="button-container">
+                        <Button fx:id="btnConfirmarReserva" text="Confirmar Reserva" styleClass="button-primary">
+                            <graphic>
+                                <ImageView fitHeight="24" fitWidth="24" preserveRatio="true" styleClass="button-icon-white">
+                                    <image>
+                                        <Image url="@/images/check-icon.png"/>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnVoltar" text="Voltar" styleClass="button-secondary">
+                            <graphic>
+                                <ImageView fitHeight="24" fitWidth="24" preserveRatio="true" styleClass="button-icon-white">
+                                    <image>
+                                        <Image url="@/images/back-icon.png"/>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </StackPane>
+    </ScrollPane>
+</StackPane> 

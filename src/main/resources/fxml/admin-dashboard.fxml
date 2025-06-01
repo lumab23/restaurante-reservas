@@ -3,91 +3,167 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.shape.Rectangle?>
 
-<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.reservas_restaurantes.ui.controller.AdminDashboardController"
-      styleClass="main-container">
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.reservas_restaurantes.ui.controller.AdminDashboardController">
     
-    <VBox spacing="20">
-        <padding>
-            <Insets top="20" right="20" bottom="20" left="20"/>
-        </padding>
+    <ScrollPane styleClass="main-scroll-pane" fitToWidth="true" vbarPolicy="ALWAYS" hbarPolicy="NEVER">
+        <StackPane styleClass="content-wrapper">
+            <VBox fx:id="mainContainer" spacing="30" alignment="CENTER" styleClass="main-container">
+                <padding>
+                    <Insets top="40" right="20" bottom="40" left="20"/>
+                </padding>
 
-        <HBox alignment="CENTER_LEFT" spacing="20">
-            <Label text="Painel Administrativo" styleClass="title-label"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Button fx:id="btnLogout" text="Sair" styleClass="secondary-button"/>
-        </HBox>
+                <!-- Background Image with Overlay -->
+                <StackPane styleClass="background-container">
+                    <ImageView fitHeight="800" fitWidth="1200" preserveRatio="false">
+                        <image>
+                            <Image url="@/images/restaurant-bg.jpg"/>
+                        </image>
+                    </ImageView>
+                    <Rectangle styleClass="overlay"/>
+                </StackPane>
 
-        <!-- Painel de Estatísticas -->
-        <VBox styleClass="info-box" spacing="10">
-            <Label text="Estatísticas do Dia" styleClass="section-label"/>
-            <Label fx:id="lblEstatisticas" styleClass="info-text"/>
-        </VBox>
-
-        <TabPane fx:id="tabPane" VBox.vgrow="ALWAYS">
-            <!-- Aba Reservas -->
-            <Tab text="Reservas" closable="false">
-                <VBox spacing="10">
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <DatePicker fx:id="dpFiltroData"/>
-                        <Button fx:id="btnFiltrarReservas" text="Filtrar" styleClass="primary-button"/>
-                        <Button fx:id="btnAtualizarReservas" text="Atualizar" styleClass="secondary-button"/>
+                <!-- Main Content -->
+                <VBox alignment="CENTER" spacing="30" styleClass="content-box">
+                    <!-- Header -->
+                    <HBox alignment="CENTER_LEFT" spacing="20">
+                        <VBox>
+                            <Label text="Painel Administrativo" styleClass="welcome-title"/>
+                            <Label text="Gerencie reservas, clientes e mesas" styleClass="welcome-subtitle"/>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="btnLogout" text="Sair" onAction="#logout" styleClass="button-secondary">
+                            <graphic>
+                                <ImageView fitHeight="24" fitWidth="24" preserveRatio="true" styleClass="button-icon-white">
+                                    <image>
+                                        <Image url="@/images/logout-icon.png"/>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
                     </HBox>
-                    
-                    <TableView fx:id="tableReservas" VBox.vgrow="ALWAYS">
-                        <columns>
-                            <TableColumn fx:id="colIdReserva" text="ID" prefWidth="50"/>
-                            <TableColumn fx:id="colIdClienteReserva" text="ID Cliente" prefWidth="100"/>
-                            <TableColumn fx:id="colIdMesaReserva" text="ID Mesa" prefWidth="100"/>
-                            <TableColumn fx:id="colDataHora" text="Data/Hora" prefWidth="150"/>
-                            <TableColumn fx:id="colNumPessoas" text="Pessoas" prefWidth="100"/>
-                            <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
-                            <TableColumn fx:id="colObservacao" text="Observação" prefWidth="200"/>
-                        </columns>
-                    </TableView>
-                </VBox>
-            </Tab>
 
-            <!-- Aba Clientes -->
-            <Tab text="Clientes" closable="false">
-                <VBox spacing="10">
-                    <HBox alignment="CENTER_RIGHT">
-                        <Button fx:id="btnAtualizarClientes" text="Atualizar" styleClass="secondary-button"/>
+                    <!-- Estatísticas -->
+                    <HBox spacing="20" alignment="CENTER">
+                        <VBox styleClass="info-box" HBox.hgrow="ALWAYS" spacing="15">
+                            <Label text="Estatísticas do Dia" styleClass="section-label"/>
+                            <Label fx:id="lblEstatisticas" styleClass="info-text"/>
+                        </VBox>
                     </HBox>
-                    
-                    <TableView fx:id="tableClientes" VBox.vgrow="ALWAYS">
-                        <columns>
-                            <TableColumn fx:id="colIdClienteCliente" text="ID" prefWidth="50"/>
-                            <TableColumn fx:id="colNomeCliente" text="Nome" prefWidth="200"/>
-                            <TableColumn fx:id="colEmailCliente" text="Email" prefWidth="200"/>
-                            <TableColumn fx:id="colTelefoneCliente" text="Telefone" prefWidth="150"/>
-                        </columns>
-                    </TableView>
-                </VBox>
-            </Tab>
 
-            <!-- Aba Mesas -->
-            <Tab text="Mesas" closable="false">
-                <VBox spacing="10">
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <DatePicker fx:id="dpFiltroDataMesas"/>
-                        <Button fx:id="btnFiltrarMesas" text="Filtrar" styleClass="primary-button"/>
-                        <Button fx:id="btnAtualizarMesas" text="Atualizar" styleClass="secondary-button"/>
-                    </HBox>
-                    
-                    <TableView fx:id="tableMesas" VBox.vgrow="ALWAYS">
-                        <columns>
-                            <TableColumn fx:id="colIdMesaMesa" text="ID" prefWidth="50"/>
-                            <TableColumn fx:id="colCapacidade" text="Capacidade" prefWidth="100"/>
-                            <TableColumn fx:id="colLocalizacao" text="Localização" prefWidth="200"/>
-                            <TableColumn fx:id="colStatusMesa" text="Status" prefWidth="100"/>
-                            <TableColumn fx:id="colHorariosReserva" text="Horários Reservados" prefWidth="200"/>
-                            <TableColumn fx:id="colObservacoesMesa" text="Observações" prefWidth="200"/>
-                        </columns>
-                    </TableView>
+                    <!-- Tabs -->
+                    <TabPane fx:id="tabPane" VBox.vgrow="ALWAYS" styleClass="modern-tab-pane">
+                        <!-- Aba Reservas -->
+                        <Tab text="Reservas" closable="false">
+                            <VBox spacing="20">
+                                <HBox spacing="15" alignment="CENTER_LEFT">
+                                    <DatePicker fx:id="dpFiltroData" styleClass="card-input"/>
+                                    <Button fx:id="btnFiltrarReservas" text="Filtrar" styleClass="button-primary">
+                                        <graphic>
+                                            <ImageView fitHeight="20" fitWidth="20" preserveRatio="true" styleClass="button-icon-white">
+                                                <image>
+                                                    <Image url="@/images/filter-icon.png"/>
+                                                </image>
+                                            </ImageView>
+                                        </graphic>
+                                    </Button>
+                                    <Button fx:id="btnAtualizarReservas" text="Atualizar" styleClass="button-secondary">
+                                        <graphic>
+                                            <ImageView fitHeight="20" fitWidth="20" preserveRatio="true" styleClass="button-icon-white">
+                                                <image>
+                                                    <Image url="@/images/refresh-icon.png"/>
+                                                </image>
+                                            </ImageView>
+                                        </graphic>
+                                    </Button>
+                                </HBox>
+                                
+                                <TableView fx:id="tableReservas" VBox.vgrow="ALWAYS" styleClass="modern-table">
+                                    <columns>
+                                        <TableColumn fx:id="colIdReserva" text="ID" prefWidth="50"/>
+                                        <TableColumn fx:id="colIdClienteReserva" text="ID Cliente" prefWidth="100"/>
+                                        <TableColumn fx:id="colIdMesaReserva" text="ID Mesa" prefWidth="100"/>
+                                        <TableColumn fx:id="colDataHora" text="Data/Hora" prefWidth="150"/>
+                                        <TableColumn fx:id="colNumPessoas" text="Pessoas" prefWidth="100"/>
+                                        <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
+                                        <TableColumn fx:id="colObservacao" text="Observação" prefWidth="200"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                        </Tab>
+
+                        <!-- Aba Clientes -->
+                        <Tab text="Clientes" closable="false">
+                            <VBox spacing="20">
+                                <HBox alignment="CENTER_RIGHT">
+                                    <Button fx:id="btnAtualizarClientes" text="Atualizar" styleClass="button-secondary">
+                                        <graphic>
+                                            <ImageView fitHeight="20" fitWidth="20" preserveRatio="true" styleClass="button-icon-white">
+                                                <image>
+                                                    <Image url="@/images/refresh-icon.png"/>
+                                                </image>
+                                            </ImageView>
+                                        </graphic>
+                                    </Button>
+                                </HBox>
+                                
+                                <TableView fx:id="tableClientes" VBox.vgrow="ALWAYS" styleClass="modern-table">
+                                    <columns>
+                                        <TableColumn fx:id="colIdClienteCliente" text="ID" prefWidth="50"/>
+                                        <TableColumn fx:id="colNomeCliente" text="Nome" prefWidth="200"/>
+                                        <TableColumn fx:id="colEmailCliente" text="Email" prefWidth="200"/>
+                                        <TableColumn fx:id="colTelefoneCliente" text="Telefone" prefWidth="150"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                        </Tab>
+
+                        <!-- Aba Mesas -->
+                        <Tab text="Mesas" closable="false">
+                            <VBox spacing="20">
+                                <HBox spacing="15" alignment="CENTER_LEFT">
+                                    <DatePicker fx:id="dpFiltroDataMesas" styleClass="card-input"/>
+                                    <Button fx:id="btnFiltrarMesas" text="Filtrar" styleClass="button-primary">
+                                        <graphic>
+                                            <ImageView fitHeight="20" fitWidth="20" preserveRatio="true" styleClass="button-icon-white">
+                                                <image>
+                                                    <Image url="@/images/filter-icon.png"/>
+                                                </image>
+                                            </ImageView>
+                                        </graphic>
+                                    </Button>
+                                    <Button fx:id="btnAtualizarMesas" text="Atualizar" styleClass="button-secondary">
+                                        <graphic>
+                                            <ImageView fitHeight="20" fitWidth="20" preserveRatio="true" styleClass="button-icon-white">
+                                                <image>
+                                                    <Image url="@/images/refresh-icon.png"/>
+                                                </image>
+                                            </ImageView>
+                                        </graphic>
+                                    </Button>
+                                </HBox>
+                                
+                                <TableView fx:id="tableMesas" VBox.vgrow="ALWAYS" styleClass="modern-table">
+                                    <columns>
+                                        <TableColumn fx:id="colIdMesaMesa" text="ID" prefWidth="50"/>
+                                        <TableColumn fx:id="colCapacidade" text="Capacidade" prefWidth="100"/>
+                                        <TableColumn fx:id="colLocalizacao" text="Localização" prefWidth="200"/>
+                                        <TableColumn fx:id="colStatusMesa" text="Status" prefWidth="100"/>
+                                        <TableColumn fx:id="colHorariosReserva" text="Horários Reservados" prefWidth="200"/>
+                                        <TableColumn fx:id="colObservacoesMesa" text="Observações" prefWidth="200"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                        </Tab>
+                    </TabPane>
                 </VBox>
-            </Tab>
-        </TabPane>
-    </VBox>
-</ScrollPane> 
+            </VBox>
+        </StackPane>
+    </ScrollPane>
+</StackPane> 

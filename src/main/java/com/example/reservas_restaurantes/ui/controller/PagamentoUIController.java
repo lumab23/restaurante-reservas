@@ -275,7 +275,18 @@ public class PagamentoUIController implements Initializable {
     }
 
     private String formatarOcasiao(String ocasiao) {
-        return ocasiao.replace("_", " ").toLowerCase();
+        String[] palavras = ocasiao.replace("_", " ").toLowerCase().split(" ");
+        StringBuilder resultado = new StringBuilder();
+        
+        for (String palavra : palavras) {
+            if (!palavra.isEmpty()) {
+                resultado.append(Character.toUpperCase(palavra.charAt(0)))
+                        .append(palavra.substring(1))
+                        .append(" ");
+            }
+        }
+        
+        return resultado.toString().trim();
     }
 
     private String formatarStatus(String status) {
