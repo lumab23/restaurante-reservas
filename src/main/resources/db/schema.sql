@@ -45,25 +45,6 @@ CREATE TABLE Reserva (
     FOREIGN KEY (id_mesa) REFERENCES Mesa(id_mesa) ON DELETE CASCADE
 );
 
--- Criação da tabela Pagamento
-CREATE TABLE Pagamento (
-    id_pagamento INT AUTO_INCREMENT PRIMARY KEY,
-    id_reserva INT NOT NULL,
-    valor DECIMAL(10,2) NOT NULL,
-    metodoPagamento VARCHAR(10) NOT NULL DEFAULT 'CARTAO',
-    FOREIGN KEY (id_reserva) REFERENCES Reserva(id_reserva) ON DELETE CASCADE
-);
-
--- Criação da tabela PagamentoCartao
-CREATE TABLE PagamentoCartao (
-    id_pagamento INT PRIMARY KEY,
-    numeroCartao VARCHAR(19) NOT NULL,
-    titular VARCHAR(100) NOT NULL,
-    validade DATE NOT NULL,
-    cvv VARCHAR(4) NOT NULL,
-    FOREIGN KEY (id_pagamento) REFERENCES Pagamento(id_pagamento) ON DELETE CASCADE
-);
-
 -- Índices para otimizar joins e buscas
 CREATE INDEX idx_reserva_cliente ON Reserva(id_cliente);
 CREATE INDEX idx_reserva_mesa ON Reserva(id_mesa);
@@ -80,23 +61,7 @@ INSERT INTO Admin (nome, email, senha, cargo) VALUES
 ('Supervisor', 'supervisor@restaurante.com', '$2a$10$...', 'Supervisor'),
 ('Atendente', 'atendente@restaurante.com', '$2a$10$...', 'Atendente');
 
--- Mesas
-INSERT INTO Mesa (capacidade, localizacao) VALUES 
-(4, 'Sala Principal'),
-(2, 'Varanda'),
-(6, 'Área VIP');
-
 -- Reservas
 INSERT INTO Reserva (id_cliente, id_mesa, dataHora, numPessoas, ocasiao, observacao) VALUES 
 (1, 1, '2025-05-20 20:00:00', 2, 'JANTAR_A_DOIS', 'Mesa romântica com vela.'),
-(2, 2, '2025-05-21 13:00:00', 1, 'RELAXAR', 'Almoço rápido.');
-
--- Pagamentos
-INSERT INTO Pagamento (id_reserva, valor, metodoPagamento) VALUES 
-(1, 61.00, 'CARTAO'),
-(2, 38.00, 'CARTAO');
-
--- Detalhes dos pagamentos com cartão
-INSERT INTO PagamentoCartao (id_pagamento, numeroCartao, titular, validade, cvv) VALUES 
-(1, '4111111111111111', 'João Silva', '2027-12-01', '123'),
-(2, '5555555555554444', 'Maria Souza', '2026-10-01', '456'); 
+(2, 2, '2025-05-21 13:00:00', 1, 'RELAXAR', 'Almoço rápido.'); 

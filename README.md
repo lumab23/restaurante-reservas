@@ -10,7 +10,6 @@ Um sistema completo de gerenciamento de reservas para restaurantes, desenvolvido
 - Realização de reservas
 - Consulta de reservas existentes
 - Cancelamento de reservas
-- Sistema de pagamento integrado
 
 ### Área do Administrador
 - Dashboard administrativo
@@ -18,7 +17,6 @@ Um sistema completo de gerenciamento de reservas para restaurantes, desenvolvido
 - Visualização de todas as reservas
 - Gestão de clientes
 - Relatórios de ocupação
-- Controle de pagamentos
 
 ## 🛠️ Tecnologias Utilizadas
 

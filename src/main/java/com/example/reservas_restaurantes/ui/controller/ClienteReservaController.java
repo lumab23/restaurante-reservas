@@ -7,10 +7,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import com.example.reservas_restaurantes.enums.TipoOcasiao;
@@ -23,11 +21,9 @@ import com.example.reservas_restaurantes.service.ReservaService;
 import com.example.reservas_restaurantes.utils.WindowUtils;
 
 import java.io.IOException;
-import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -204,7 +200,11 @@ public class ClienteReservaController {
     
     private void atualizarMesasDisponiveis() {
         try {
-            if (dpDataReserva.getValue() == null || cbHorario.getValue() == null) {
+            // Só filtrar se data, horário e número de pessoas estiverem preenchidos
+            if (dpDataReserva.getValue() == null || cbHorario.getValue() == null || spnNumPessoas.getValue() == null) {
+                // Carregar todas as mesas se não houver filtro suficiente
+                List<Mesa> todasMesas = mesaService.listarTodasMesas();
+                cbMesa.setItems(FXCollections.observableArrayList(todasMesas));
                 return;
             }
 
@@ -215,7 +215,7 @@ public class ClienteReservaController {
 
             // Buscar todas as mesas
             List<Mesa> todasMesas = mesaService.listarTodasMesas();
-            
+
             // Filtrar mesas disponíveis para o horário selecionado
             List<Mesa> mesasDisponiveis = todasMesas.stream()
                 .filter(mesa -> {
@@ -224,7 +224,6 @@ public class ClienteReservaController {
                         if (mesa.getCapacidade() < spnNumPessoas.getValue()) {
                             return false;
                         }
-                        
                         // Verificar disponibilidade no horário selecionado
                         return reservaService.verificarDisponibilidadeMesa(mesa.getIdMesa(), dataHoraReserva);
                     } catch (Exception e) {
@@ -234,23 +233,22 @@ public class ClienteReservaController {
                 })
                 .collect(Collectors.toList());
 
-            // Atualizar o ComboBox com as mesas disponíveis
             Mesa mesaSelecionada = cbMesa.getValue();
             cbMesa.setItems(FXCollections.observableArrayList(mesasDisponiveis));
-            
-            // Se a mesa anteriormente selecionada ainda estiver disponível, mantê-la selecionada
             if (mesaSelecionada != null && mesasDisponiveis.contains(mesaSelecionada)) {
                 cbMesa.setValue(mesaSelecionada);
             }
 
-            // Se não houver mesas disponíveis, mostrar alerta
-            if (mesasDisponiveis.isEmpty()) {
+            // Só mostrar alerta se todos os filtros estiverem preenchidos e não houver mesas disponíveis
+            if (!mesasDisponiveis.isEmpty()) {
+                return;
+            }
+            if (dpDataReserva.getValue() != null && cbHorario.getValue() != null && spnNumPessoas.getValue() != null) {
                 mostrarAlerta("Aviso", 
                     "Não há mesas disponíveis para " + spnNumPessoas.getValue() + " pessoas no horário selecionado.\n" +
                     "Por favor, tente outro horário ou data.",
                     Alert.AlertType.WARNING);
             }
-            
         } catch (Exception e) {
             mostrarAlerta("Erro", "Erro ao atualizar mesas disponíveis: " + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -323,9 +321,7 @@ public class ClienteReservaController {
                 "Horário: " + cbHorario.getValue() + "\n" +
                 "Mesa: " + cbMesa.getValue().getIdMesa(),
                 Alert.AlertType.INFORMATION);
-            
-            // Abrir tela de pagamento com a reserva completa
-            abrirTelaPagamento(reserva);
+            voltarInicio();
             
         } catch (Exception e) {
             mostrarAlerta("Erro", "Erro ao confirmar reserva: " + e.getMessage(), Alert.AlertType.ERROR);
@@ -374,75 +370,6 @@ public class ClienteReservaController {
         }
         
         return true;
-    }
-    
-    private void abrirTelaPagamento(Reserva reserva) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Pagamento");
-        alert.setHeaderText("Deseja realizar o pagamento agora?");
-        alert.setContentText("Você pode pagar antecipadamente ou no dia da reserva.");
-        
-        ButtonType btnPagarAgora = new ButtonType("Pagar Agora");
-        ButtonType btnDepois = new ButtonType("Pagar Depois");
-        ButtonType btnCancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
-        
-        alert.getButtonTypes().setAll(btnPagarAgora, btnDepois, btnCancelar);
-        
-        alert.showAndWait().ifPresent(response -> {
-            if (response == btnPagarAgora) {
-                try {
-                    // Usar ClassPathResource do Spring para carregar o FXML
-                    ClassPathResource resource = new ClassPathResource("fxml/pagamento.fxml");
-                    URL resourceUrl;
-                    try {
-                        resourceUrl = resource.getURL();
-                        System.out.println("Tentando carregar FXML de: " + resourceUrl);
-                    } catch (IOException e) {
-                        throw new IOException("Não foi possível acessar o arquivo pagamento.fxml: " + e.getMessage());
-                    }
-                    
-                    FXMLLoader loader = new FXMLLoader(resourceUrl);
-                    // MUDANÇA PRINCIPAL: Usar o Spring Context para criar o controller
-                    loader.setControllerFactory(mainController.getSpringContext()::getBean);
-                    Parent root = loader.load();
-                    
-                    Scene scene = new Scene(root);
-                    Stage stage = new Stage();
-                    stage.setTitle("Pagamento da Reserva");
-                    stage.setScene(scene);
-                    stage.initModality(Modality.APPLICATION_MODAL);
-                    
-                    PagamentoUIController pagamentoController = loader.getController();
-                    pagamentoController.setStage(stage);
-                    pagamentoController.setReserva(reserva);
-                    pagamentoController.setMainController(mainController);
-                    
-                    stage.showAndWait();
-                } catch (IOException e) {
-                    System.err.println("Erro detalhado ao abrir tela de pagamento:");
-                    e.printStackTrace();
-                    String resourcePath;
-                    try {
-                        resourcePath = new ClassPathResource("fxml/pagamento.fxml").getURL().toString();
-                    } catch (IOException ex) {
-                        resourcePath = "não foi possível determinar o caminho";
-                    }
-                    mostrarAlerta("Erro", 
-                        "Erro ao abrir tela de pagamento: " + e.getMessage() + "\n" +
-                        "Caminho do arquivo: " + resourcePath,
-                        Alert.AlertType.ERROR);
-                }
-            } else if (response == btnDepois) {
-                mostrarAlerta("Informação", 
-                    "Você poderá realizar o pagamento no dia da reserva.\n" +
-                    "Data: " + reserva.getDataHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "\n" +
-                    "Horário: " + reserva.getDataHora().format(DateTimeFormatter.ofPattern("HH:mm")),
-                    Alert.AlertType.INFORMATION);
-                voltarInicio();
-            } else {
-                voltarInicio();
-            }
-        });
     }
     
     @FXML

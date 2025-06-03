@@ -23,8 +23,6 @@ import org.springframework.stereotype.Component;
 import javafx.stage.Stage;
 import com.example.reservas_restaurantes.utils.WindowUtils;
 
-// ... rest of the file ...
-
 @Component
 public class ClienteAcessoController {
 
