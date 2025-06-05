@@ -59,11 +59,11 @@ public class AdminService {
     @Transactional
     public Admin atualizarAdmin(Admin admin) throws BusinessRuleException, EntidadeNaoEncontradaException {
         validarDadosAdmin(admin.getNome(), admin.getEmail(), admin.getSenha(), admin.getCargo());
-        buscarAdminPorId(admin.getIdAdmin());
+        buscarAdminPorId(admin.getId());
 
         try {
             Optional<Admin> adminExistente = adminRepository.buscarPorEmail(admin.getEmail());
-            if (adminExistente.isPresent() && adminExistente.get().getIdAdmin() != admin.getIdAdmin()) {
+            if (adminExistente.isPresent() && adminExistente.get().getId() != admin.getId()) {
                 throw new BusinessRuleException("Email já cadastrado para outro administrador.");
             }
             adminRepository.atualizar(admin);

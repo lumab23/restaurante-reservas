@@ -48,7 +48,7 @@ public class AdminDAO implements AdminRepository {
 
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
-                    admin.setIdAdmin(rs.getInt(1));
+                    admin.setId(rs.getInt(1));
                 }
             }
         }
@@ -116,7 +116,7 @@ public class AdminDAO implements AdminRepository {
             stmt.setString(3, senhaCriptografada);
             stmt.setString(4, admin.getCargo());
             stmt.setBoolean(5, admin.isAtivo());
-            stmt.setInt(6, admin.getIdAdmin());
+            stmt.setInt(6, admin.getId());
             stmt.executeUpdate();
         }
     }
@@ -180,7 +180,7 @@ public class AdminDAO implements AdminRepository {
 
     private Admin mapAdmin(ResultSet rs) throws SQLException {
         Admin admin = new Admin();
-        admin.setIdAdmin(rs.getInt("id_admin"));
+        admin.setId(rs.getInt("id_admin"));
         admin.setNome(rs.getString("nome"));
         admin.setEmail(rs.getString("email"));
         admin.setSenha(rs.getString("senha")); // Mantém o hash original

@@ -41,7 +41,7 @@ public class ClienteRepositoryImpl implements ClienteRepository {
             Integer id = jdbcTemplate.queryForObject(sqlId, Integer.class);
             
             if (id != null) {
-                cliente.setIdCliente(id);
+                cliente.setId(id);
             } else {
                 throw new SQLException("Falha ao obter ID do cliente após inserção");
             }
@@ -57,7 +57,7 @@ public class ClienteRepositoryImpl implements ClienteRepository {
             String sql = "SELECT * FROM cliente WHERE id_cliente = ?";
             return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
                 Cliente cliente = new Cliente();
-                cliente.setIdCliente(rs.getInt("id_cliente"));
+                cliente.setId(rs.getInt("id_cliente"));
                 cliente.setNome(rs.getString("nome"));
                 cliente.setEmail(rs.getString("email"));
                 cliente.setTelefone(rs.getString("telefone"));
@@ -79,7 +79,7 @@ public class ClienteRepositoryImpl implements ClienteRepository {
             String sql = "SELECT * FROM cliente";
             return jdbcTemplate.query(sql, (rs, rowNum) -> {
                 Cliente cliente = new Cliente();
-                cliente.setIdCliente(rs.getInt("id_cliente"));
+                cliente.setId(rs.getInt("id_cliente"));
                 cliente.setNome(rs.getString("nome"));
                 cliente.setEmail(rs.getString("email"));
                 cliente.setTelefone(rs.getString("telefone"));
@@ -104,7 +104,7 @@ public class ClienteRepositoryImpl implements ClienteRepository {
                 cliente.getEmail(), 
                 cliente.getTelefone(),
                 cliente.getDataNascimento(),
-                cliente.getIdCliente()
+                cliente.getId()
             );
         } catch (Exception e) {
             log.error("Erro ao atualizar cliente: {}", cliente, e);
@@ -129,7 +129,7 @@ public class ClienteRepositoryImpl implements ClienteRepository {
             String sql = "SELECT * FROM cliente WHERE email = ?";
             List<Cliente> resultados = jdbcTemplate.query(sql, (rs, rowNum) -> {
                 Cliente cliente = new Cliente();
-                cliente.setIdCliente(rs.getInt("id_cliente"));
+                cliente.setId(rs.getInt("id_cliente"));
                 cliente.setNome(rs.getString("nome"));
                 cliente.setEmail(rs.getString("email"));
                 cliente.setTelefone(rs.getString("telefone"));

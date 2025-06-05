@@ -317,9 +317,10 @@ public class ClienteReservaController {
             
             mostrarAlerta("Sucesso", 
                 "Reserva confirmada com sucesso!\n" +
-                "Data: " + dpDataReserva.getValue().toString() + "\n" +
-                "Horário: " + cbHorario.getValue() + "\n" +
-                "Mesa: " + cbMesa.getValue().getIdMesa(),
+                "ID da Reserva: " + reserva.getIdReserva() + "\n" +
+                "Data: " + reserva.getDataHora().toLocalDate() + "\n" +
+                "Horário: " + reserva.getDataHora().toLocalTime() + "\n" +
+                "Mesa: " + reserva.getIdMesa(),
                 Alert.AlertType.INFORMATION);
             voltarInicio();
             

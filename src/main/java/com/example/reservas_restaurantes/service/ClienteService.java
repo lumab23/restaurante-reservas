@@ -23,7 +23,6 @@ public class ClienteService {
         this.clienteRepository = clienteRepository;
     }
 
-    
     private void validarIdadeParaReserva(Cliente cliente) throws BusinessRuleException {
         if (cliente.getDataNascimento() == null) {
             throw new BusinessRuleException("A data de nascimento do cliente é obrigatória para verificar a idade.");
@@ -87,10 +86,10 @@ public class ClienteService {
 
     @Transactional
     public Cliente atualizarCliente(Cliente cliente) throws BusinessRuleException, EntidadeNaoEncontradaException {
-        if (cliente == null || cliente.getIdCliente() == 0) {
+        if (cliente == null || cliente.getId() == 0) {
             throw new BusinessRuleException("Dados do cliente inválidos para atualização.");
         }
-        buscarClientePorId(cliente.getIdCliente());
+        buscarClientePorId(cliente.getId());
 
         if (cliente.getNome() == null || cliente.getNome().trim().isEmpty()) {
             throw new BusinessRuleException("Nome do cliente não pode ser vazio na atualização.");

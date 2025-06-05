@@ -107,7 +107,7 @@ public class AdminDashboardController {
         colObservacao.setCellValueFactory(new PropertyValueFactory<>("observacao"));
         
         // Configurar tabela de clientes
-        colIdClienteCliente.setCellValueFactory(new PropertyValueFactory<>("idCliente"));
+        colIdClienteCliente.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNomeCliente.setCellValueFactory(new PropertyValueFactory<>("nome"));
         colEmailCliente.setCellValueFactory(new PropertyValueFactory<>("email"));
         colTelefoneCliente.setCellValueFactory(new PropertyValueFactory<>("telefone"));

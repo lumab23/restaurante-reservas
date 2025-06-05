@@ -22,7 +22,7 @@ public class ClienteController {
     public Cliente cadastrarCliente(String nome, String telefone, String email, LocalDate dataNascimento) {
         try {
             Cliente novoCliente = clienteService.cadastrarCliente(nome, telefone, email, dataNascimento);
-            System.out.println("Controller: Cliente cadastrado com sucesso - ID: " + novoCliente.getIdCliente());
+            System.out.println("Controller: Cliente cadastrado com sucesso - ID: " + novoCliente.getId());
             return novoCliente;
         } catch (BusinessRuleException e) {
             System.err.println("Controller: Erro ao cadastrar cliente - " + e.getMessage());
@@ -33,7 +33,7 @@ public class ClienteController {
     public Cliente buscarClientePorId(int id) {
         try {
             Cliente cliente = clienteService.buscarClientePorId(id);
-            System.out.println("Controller: Cliente encontrado - ID: " + cliente.getIdCliente());
+            System.out.println("Controller: Cliente encontrado - ID: " + cliente.getId());
             return cliente;
         } catch (EntidadeNaoEncontradaException e) {
             System.err.println("Controller: " + e.getMessage());
@@ -58,7 +58,7 @@ public class ClienteController {
     public boolean atualizarCliente(Cliente cliente) {
         try {
             clienteService.atualizarCliente(cliente);
-            System.out.println("Controller: Cliente ID " + cliente.getIdCliente() + " atualizado com sucesso.");
+            System.out.println("Controller: Cliente ID " + cliente.getId() + " atualizado com sucesso.");
             return true;
         } catch (BusinessRuleException e) {
             System.err.println("Controller: Erro ao atualizar cliente - " + e.getMessage());

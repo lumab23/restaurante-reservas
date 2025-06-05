@@ -171,7 +171,7 @@ public class ClienteAcessoController {
             }
 
             Cliente cliente = clienteOpt.get();
-            List<Reserva> reservas = reservaService.listarReservasPorCliente(cliente.getIdCliente());
+            List<Reserva> reservas = reservaService.listarReservasPorCliente(cliente.getId());
             
             if (reservas.isEmpty()) {
                 mostrarMensagem("Nenhuma reserva encontrada para este cliente.", false);

@@ -57,7 +57,7 @@ public class ClienteDAO implements ClienteRepository {
 
             chavesGeradas = statement.getGeneratedKeys();
             if (chavesGeradas.next()) {
-                cliente.setIdCliente(chavesGeradas.getInt(1));
+                cliente.setId(chavesGeradas.getInt(1));
             } else {
                 throw new SQLException("falha ao criar cliente, nenhum ID obtido");
             }
@@ -72,7 +72,7 @@ public class ClienteDAO implements ClienteRepository {
     }
 
     @Override
-    public Optional<Cliente> buscarPorId(int idCliente) throws SQLException {
+    public Optional<Cliente> buscarPorId(int id) throws SQLException {
         String sql =  "SELECT id_cliente, nome, telefone, email, dataNascimento FROM Cliente WHERE id_cliente = ?";
         Cliente cliente = null;
         Connection connection = null;
@@ -82,11 +82,11 @@ public class ClienteDAO implements ClienteRepository {
         try {
             connection = getConnection();
             statement = connection.prepareStatement(sql);
-            statement.setInt(1, idCliente);
+            statement.setInt(1, id);
             rs = statement.executeQuery();
             if (rs.next()) {
                 cliente = new Cliente();
-                cliente.setIdCliente(rs.getInt("id_cliente"));
+                cliente.setId(rs.getInt("id_cliente"));
                 cliente.setNome(rs.getString("nome"));
                 cliente.setTelefone(rs.getString("telefone"));
                 cliente.setEmail(rs.getString("email"));
@@ -120,7 +120,7 @@ public class ClienteDAO implements ClienteRepository {
             rs = statement.executeQuery();
             while (rs.next()) {
                 Cliente cliente = new Cliente();
-                cliente.setIdCliente(rs.getInt("id_cliente"));
+                cliente.setId(rs.getInt("id_cliente"));
                 cliente.setNome(rs.getString("nome"));
                 cliente.setTelefone(rs.getString("telefone"));
                 cliente.setEmail(rs.getString("email"));
@@ -159,11 +159,11 @@ public class ClienteDAO implements ClienteRepository {
             } else {
                 statement.setNull(4, Types.DATE);
             }
-            statement.setInt(5, cliente.getIdCliente());
+            statement.setInt(5, cliente.getId());
 
             int affectedRows = statement.executeUpdate();
             if (affectedRows == 0) {
-                throw new SQLException("Falha ao atualizar cliente, nenhum cliente encontrado com o ID: " + cliente.getIdCliente());
+                throw new SQLException("Falha ao atualizar cliente, nenhum cliente encontrado com o ID: " + cliente.getId());
             }
         } catch (SQLException e) {
             System.err.println("Erro ao atualizar cliente: " + e.getMessage());
@@ -213,7 +213,7 @@ public class ClienteDAO implements ClienteRepository {
             
             if (rs.next()) {
                 Cliente cliente = new Cliente();
-                cliente.setIdCliente(rs.getInt("id_cliente"));
+                cliente.setId(rs.getInt("id_cliente"));
                 cliente.setNome(rs.getString("nome"));
                 cliente.setTelefone(rs.getString("telefone"));
                 cliente.setEmail(rs.getString("email"));
