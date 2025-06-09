@@ -141,6 +141,11 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+					<jvmArguments>
+						--add-opens java.base/java.lang=ALL-UNNAMED
+						--add-modules javafx.controls,javafx.fxml
+						--add-exports javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
+					</jvmArguments>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -155,6 +160,12 @@
 						<option>--add-modules</option>
 						<option>javafx.controls,javafx.fxml</option>
 					</options>
+					<launcher>app</launcher>
+					<jlinkImageName>app</jlinkImageName>
+					<jlinkZipName>app-zip</jlinkZipName>
+					<noManPages>true</noManPages>
+					<stripDebug>true</stripDebug>
+					<noHeaderFiles>true</noHeaderFiles>
 				</configuration>
 			</plugin>
 		</plugins>

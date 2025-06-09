@@ -1,6 +1,125 @@
-# Sistema de Gerenciamento de Reservas para Restaurantes
+# Sistema de Reservas de Restaurantes
 
-Um sistema completo de gerenciamento de reservas para restaurantes, desenvolvido com Spring Boot e JavaFX, oferecendo uma interface gráfica moderna e intuitiva para gerenciamento de reservas, clientes, mesas e pagamentos.
+Este é um sistema de gerenciamento de reservas para restaurantes desenvolvido em Java com Spring Boot e JavaFX.
+
+## Requisitos do Sistema
+
+### 1. Ferramentas Necessárias
+
+1. **Java Development Kit (JDK) 21**
+   - Download: [Oracle JDK 21](https://www.oracle.com/java/technologies/downloads/#java21) ou [OpenJDK 21](https://jdk.java.net/21/)
+   - Instruções de instalação:
+     - Windows: Execute o instalador e siga as instruções
+     - macOS: Use o instalador .dmg ou Homebrew (`brew install openjdk@21`)
+     - Linux: Use o gerenciador de pacotes da sua distribuição
+
+2. **MySQL Server 8.0+**
+   - Download: [MySQL Community Server](https://dev.mysql.com/downloads/mysql/)
+   - Instruções de instalação:
+     - Windows: Execute o instalador MySQL
+     - macOS: Use Homebrew (`brew install mysql`)
+     - Linux: Use o gerenciador de pacotes da sua distribuição
+
+3. **IDE (Ambiente de Desenvolvimento Integrado)**
+   - Recomendado: IntelliJ IDEA Ultimate ou Community Edition
+   - Download: [IntelliJ IDEA](https://www.jetbrains.com/idea/download/)
+   - Extensões necessárias:
+     - Lombok Plugin
+     - Spring Boot Plugin
+     - JavaFX Plugin
+
+4. **Maven**
+   - Geralmente já vem com o IntelliJ IDEA
+   - Se necessário, download: [Maven](https://maven.apache.org/download.cgi)
+
+### 2. Configuração do Banco de Dados
+
+1. Instale o MySQL Server seguindo as instruções do site oficial
+2. Abra o MySQL Command Line Client ou MySQL Workbench
+3. Execute os seguintes comandos:
+
+```sql
+CREATE DATABASE restaurante_reservas_db;
+USE restaurante_reservas_db;
+```
+
+4. Configure as credenciais do banco de dados no arquivo `src/main/resources/application.properties`:
+   - Por padrão, o sistema usa:
+     - URL: jdbc:mysql://localhost:3306/restaurante_reservas_db
+     - Usuário: root
+     - Senha: 
+   - Você pode alterar estas configurações conforme necessário
+
+### 3. Importando o Projeto
+
+1. Abra o IntelliJ IDEA
+2. Clique em "File" > "Open"
+3. Navegue até a pasta do projeto e selecione o arquivo `pom.xml`
+4. Clique em "Open as Project"
+5. Aguarde o Maven baixar todas as dependências
+
+### 4. Configurando o Ambiente de Desenvolvimento
+
+1. **Instalando Extensões no IntelliJ IDEA**:
+   - Vá em "File" > "Settings" > "Plugins"
+   - Procure e instale:
+     - "Lombok"
+     - "Spring Boot"
+     - "JavaFX"
+
+2. **Configurando o JDK**:
+   - Vá em "File" > "Project Structure" > "Project"
+   - Em "Project SDK", selecione o JDK 21
+   - Em "Project language level", selecione "21 - Preview features"
+
+3. **Configurando o Maven**:
+   - Vá em "File" > "Settings" > "Build, Execution, Deployment" > "Build Tools" > "Maven"
+   - Verifique se o Maven está configurado corretamente
+
+### 5. Executando o Projeto
+
+1. **Iniciando o Banco de Dados**:
+   - Certifique-se de que o MySQL Server está rodando
+   - Verifique se o banco de dados `restaurante_reservas_db` foi criado
+
+2. **Executando a Aplicação**:
+   - Localize a classe `MainApplication` em `src/main/java/com/example/reservas_restaurantes/ui/MainApplication.java`
+   - Clique com o botão direito e selecione "Run 'MainApplication'"
+   - Ou use o terminal na pasta do projeto:
+     ```bash
+     mvn spring-boot:run
+     ```
+
+### 6. Estrutura do Projeto
+
+- `src/main/java/com/example/reservas_restaurantes/`
+  - `controller/`: Controladores REST
+  - `service/`: Lógica de negócios
+  - `repository/`: Interfaces de acesso ao banco de dados
+  - `model/`: Classes de entidade
+  - `ui/`: Interface gráfica JavaFX
+  - `config/`: Configurações do Spring Boot
+  - `exception/`: Classes de exceção personalizadas
+  - `utils/`: Classes utilitárias
+
+### 7. Solução de Problemas Comuns
+
+1. **Erro de Conexão com o Banco de Dados**:
+   - Verifique se o MySQL está rodando
+   - Confirme as credenciais no `application.properties`
+   - Verifique se o banco de dados foi criado
+
+2. **Erro de Dependências**:
+   - Execute `mvn clean install` no terminal
+   - Atualize o projeto no IntelliJ IDEA (Ctrl+Shift+O)
+
+3. **Erro de JavaFX**:
+   - Verifique se o JDK 21 está instalado corretamente
+   - Confirme se as dependências do JavaFX estão no `pom.xml`
+
+### 8. Suporte
+
+Para qualquer problema ou dúvida, entre em contato com o desenvolvedor do projeto.
 
 ## 🚀 Funcionalidades
 

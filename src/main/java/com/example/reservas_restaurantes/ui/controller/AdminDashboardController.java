@@ -347,10 +347,10 @@ public class AdminDashboardController {
         confirmacao.setHeaderText("Tem certeza que deseja sair?");
         confirmacao.setContentText("Você será redirecionado para a tela inicial.");
         
-        confirmacao.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+        confirmacao.getButtonTypes().setAll(new ButtonType("Sim"), new ButtonType("Não"));
         
         confirmacao.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.YES) {
+            if (response.getText().equals("Sim")) {
                 try {
                     // Primeiro desativar o modo admin
                     mainController.setAdminMode(false);
