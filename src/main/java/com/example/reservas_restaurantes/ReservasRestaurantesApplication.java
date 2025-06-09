@@ -8,5 +8,5 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @ComponentScan(basePackages = "com.example")
 @EnableAspectJAutoProxy(proxyTargetClass = true) 
 public class ReservasRestaurantesApplication {
-	// Removendo a inicialização do Spring daqui, pois agora será feita pelo MainApplication
+	
 }

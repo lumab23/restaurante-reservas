@@ -19,7 +19,7 @@
                     <Insets top="40" right="20" bottom="40" left="20"/>
                 </padding>
 
-                <!-- Background Image with Overlay -->
+               
                 <StackPane styleClass="background-container">
                     <ImageView fitHeight="800" fitWidth="1200" preserveRatio="false">
                         <image>

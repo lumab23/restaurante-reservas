@@ -1,239 +1,151 @@
 package com.example.reservas_restaurantes.dao;
 
-import org.springframework.stereotype.Component;
-import com.example.reservas_restaurantes.model.Cliente;
-import com.example.reservas_restaurantes.repository.ClienteRepository;
-import com.example.reservas_restaurantes.exception.BusinessRuleException;
-import org.springframework.jdbc.datasource.DataSourceUtils;
-
-import javax.sql.DataSource;
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-@Component
+import com.example.reservas_restaurantes.model.Cliente;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+import org.springframework.context.annotation.Primary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.example.reservas_restaurantes.exception.BusinessRuleException;
+import com.example.reservas_restaurantes.repository.ClienteRepository;
+
+@Repository
+@Primary
 public class ClienteDAO implements ClienteRepository {
 
-    private final DataSource dataSource;
+    private static final Logger log = LoggerFactory.getLogger(ClienteDAO.class);
 
-    public ClienteDAO(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
+    private final JdbcTemplate jdbcTemplate;
 
-    private Connection getConnection() throws SQLException {
-        return DataSourceUtils.getConnection(dataSource);
-    }
-
-    private void releaseConnection(Connection conn) {
-        DataSourceUtils.releaseConnection(conn, dataSource);
+    public ClienteDAO(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
     public void salvar(Cliente cliente) throws SQLException {
-        String sql = "INSERT INTO Cliente (nome, telefone, email, dataNascimento) VALUES (?, ?, ?, ?)";
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet chavesGeradas = null;
-
         try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            // Primeiro, inserir o cliente
+            String sql = "INSERT INTO cliente (nome, email, telefone, dataNascimento) VALUES (?, ?, ?, ?)";
+            jdbcTemplate.update(sql, 
+                cliente.getNome(),
+                cliente.getEmail(),
+                cliente.getTelefone(),
+                java.sql.Date.valueOf(cliente.getDataNascimento())
+            );
 
-            statement.setString(1, cliente.getNome());
-            statement.setString(2, cliente.getTelefone());
-            statement.setString(3, cliente.getEmail());
-
-            if (cliente.getDataNascimento() != null) {
-                statement.setDate(4, Date.valueOf(cliente.getDataNascimento()));
+            // Depois, obter o ID gerado usando LAST_INSERT_ID()
+            String sqlId = "SELECT LAST_INSERT_ID()";
+            Integer id = jdbcTemplate.queryForObject(sqlId, Integer.class);
+            
+            if (id != null) {
+                cliente.setId(id);
             } else {
-                statement.setNull(4, Types.DATE);
+                throw new SQLException("Falha ao obter ID do cliente após inserção");
             }
-
-            int linhasAfetadas = statement.executeUpdate();
-            if (linhasAfetadas == 0) {
-                throw new SQLException("Erro ao inserir o cliente no banco de dados.");
-            }
-
-            chavesGeradas = statement.getGeneratedKeys();
-            if (chavesGeradas.next()) {
-                cliente.setId(chavesGeradas.getInt(1));
-            } else {
-                throw new SQLException("falha ao criar cliente, nenhum ID obtido");
-            }
-        } catch (SQLException e) {
-            System.err.println("erro ao salvar o cliente: " + e.getMessage());
-            throw e;
-        } finally {
-            if (chavesGeradas != null) chavesGeradas.close();
-            if (statement != null) statement.close();
-            releaseConnection(connection);
+        } catch (Exception e) {
+            log.error("Erro ao salvar cliente: {}", cliente, e);
+            throw new SQLException("Erro ao salvar cliente: " + e.getMessage());
         }
     }
 
     @Override
-    public Optional<Cliente> buscarPorId(int id) throws SQLException {
-        String sql =  "SELECT id_cliente, nome, telefone, email, dataNascimento FROM Cliente WHERE id_cliente = ?";
-        Cliente cliente = null;
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet rs = null;
-
+    public Optional<Cliente> buscarPorId(int idCliente) throws SQLException {
         try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setInt(1, id);
-            rs = statement.executeQuery();
-            if (rs.next()) {
-                cliente = new Cliente();
+            String sql = "SELECT * FROM cliente WHERE id_cliente = ?";
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+                Cliente cliente = new Cliente();
                 cliente.setId(rs.getInt("id_cliente"));
                 cliente.setNome(rs.getString("nome"));
-                cliente.setTelefone(rs.getString("telefone"));
                 cliente.setEmail(rs.getString("email"));
-                Date dataNascimento = rs.getDate("dataNascimento");
+                cliente.setTelefone(rs.getString("telefone"));
+                java.sql.Date dataNascimento = rs.getDate("dataNascimento");
                 if (dataNascimento != null) {
                     cliente.setDataNascimento(dataNascimento.toLocalDate());
                 }
-            }
-        } catch (SQLException e) {
-            System.err.println("erro ao buscar cliente por id: " + e.getMessage());
-            throw e;
-        } finally {
-            if (rs != null) rs.close();
-            if (statement != null) statement.close();
-            releaseConnection(connection);
+                return cliente;
+            }, idCliente));
+        } catch (Exception e) {
+            log.error("Erro ao buscar cliente por ID: {}", idCliente, e);
+            throw new SQLException("Erro ao buscar cliente: " + e.getMessage());
         }
-        return Optional.ofNullable(cliente);
     }
 
     @Override
     public List<Cliente> buscarTodos() throws SQLException {
-        String sql = "SELECT id_cliente, nome, telefone, email, dataNascimento FROM Cliente";
-        List<Cliente> clientes = new ArrayList<>();
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet rs = null;
-
         try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            rs = statement.executeQuery();
-            while (rs.next()) {
+            String sql = "SELECT * FROM cliente";
+            return jdbcTemplate.query(sql, (rs, rowNum) -> {
                 Cliente cliente = new Cliente();
                 cliente.setId(rs.getInt("id_cliente"));
                 cliente.setNome(rs.getString("nome"));
-                cliente.setTelefone(rs.getString("telefone"));
                 cliente.setEmail(rs.getString("email"));
-                Date dataNascimento = rs.getDate("dataNascimento");
+                cliente.setTelefone(rs.getString("telefone"));
+                java.sql.Date dataNascimento = rs.getDate("dataNascimento");
                 if (dataNascimento != null) {
                     cliente.setDataNascimento(dataNascimento.toLocalDate());
                 }
-                clientes.add(cliente);
-            }
-        } catch (SQLException e) {
-            System.err.println("Erro ao buscar todos os clientes: " + e.getMessage());
-            throw e;
-        } finally {
-            if (rs != null) rs.close();
-            if (statement != null) statement.close();
-            releaseConnection(connection);
+                return cliente;
+            });
+        } catch (Exception e) {
+            log.error("Erro ao buscar todos os clientes", e);
+            throw new SQLException("Erro ao buscar clientes: " + e.getMessage());
         }
-        return clientes;
     }
 
     @Override
     public void atualizar(Cliente cliente) throws SQLException {
-        String sql = "UPDATE Cliente SET nome = ?, telefone = ?, email = ?, dataNascimento = ? WHERE id_cliente = ?";
-        Connection connection = null;
-        PreparedStatement statement = null;
-
         try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-
-            statement.setString(1, cliente.getNome());
-            statement.setString(2, cliente.getTelefone());
-            statement.setString(3, cliente.getEmail());
-            if (cliente.getDataNascimento() != null) {
-                statement.setDate(4, Date.valueOf(cliente.getDataNascimento()));
-            } else {
-                statement.setNull(4, Types.DATE);
-            }
-            statement.setInt(5, cliente.getId());
-
-            int affectedRows = statement.executeUpdate();
-            if (affectedRows == 0) {
-                throw new SQLException("Falha ao atualizar cliente, nenhum cliente encontrado com o ID: " + cliente.getId());
-            }
-        } catch (SQLException e) {
-            System.err.println("Erro ao atualizar cliente: " + e.getMessage());
-            throw e;
-        } finally {
-            if (statement != null) statement.close();
-            releaseConnection(connection);
+            String sql = "UPDATE cliente SET nome = ?, email = ?, telefone = ?, dataNascimento = ? WHERE id_cliente = ?";
+            jdbcTemplate.update(sql, 
+                cliente.getNome(), 
+                cliente.getEmail(), 
+                cliente.getTelefone(),
+                cliente.getDataNascimento(),
+                cliente.getId()
+            );
+        } catch (Exception e) {
+            log.error("Erro ao atualizar cliente: {}", cliente, e);
+            throw new SQLException("Erro ao atualizar cliente: " + e.getMessage());
         }
     }
 
     @Override
-    public void deletar(int id) throws SQLException {
-        String sql = "DELETE FROM Cliente WHERE id_cliente = ?";
-        Connection connection = null;
-        PreparedStatement statement = null;
-
+    public void deletar(int idCliente) throws SQLException {
         try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-
-            statement.setInt(1, id);
-            int affectedRows = statement.executeUpdate();
-            if (affectedRows == 0) {
-                System.out.println("Nenhum cliente encontrado com o ID: " + id + " para deletar, ou já foi deletado.");
-            }
-        } catch (SQLException e) {
-            System.err.println("Erro ao deletar cliente: " + e.getMessage());
-            throw e;
-        } finally {
-            if (statement != null) statement.close();
-            releaseConnection(connection);
+            String sql = "DELETE FROM cliente WHERE id_cliente = ?";
+            jdbcTemplate.update(sql, idCliente);
+        } catch (Exception e) {
+            log.error("Erro ao deletar cliente: {}", idCliente, e);
+            throw new SQLException("Erro ao deletar cliente: " + e.getMessage());
         }
     }
 
     @Override
     public Optional<Cliente> buscarPorEmail(String email) throws BusinessRuleException {
-        String sql = "SELECT id_cliente, nome, telefone, email, dataNascimento FROM Cliente WHERE email = ?";
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet rs = null;
-
         try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, email);
-            rs = statement.executeQuery();
-            
-            if (rs.next()) {
+            String sql = "SELECT * FROM cliente WHERE email = ?";
+            List<Cliente> resultados = jdbcTemplate.query(sql, (rs, rowNum) -> {
                 Cliente cliente = new Cliente();
                 cliente.setId(rs.getInt("id_cliente"));
                 cliente.setNome(rs.getString("nome"));
-                cliente.setTelefone(rs.getString("telefone"));
                 cliente.setEmail(rs.getString("email"));
-                Date dataNascimento = rs.getDate("dataNascimento");
+                cliente.setTelefone(rs.getString("telefone"));
+                java.sql.Date dataNascimento = rs.getDate("dataNascimento");
                 if (dataNascimento != null) {
                     cliente.setDataNascimento(dataNascimento.toLocalDate());
                 }
-                return Optional.of(cliente);
-            }
-            return Optional.empty();
-        } catch (SQLException e) {
-            throw new BusinessRuleException("Erro ao buscar cliente por email: " + e.getMessage());
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (statement != null) statement.close();
-                releaseConnection(connection);
-            } catch (SQLException e) {
-                throw new BusinessRuleException("Erro ao fechar conexão: " + e.getMessage());
-            }
+                return cliente;
+            }, email);
+
+            // Retorna o primeiro resultado se existir, ou Optional.empty() se não existir
+            return resultados.isEmpty() ? Optional.empty() : Optional.of(resultados.get(0));
+        } catch (Exception e) {
+            log.error("Erro ao buscar cliente por email: {}", email, e);
+            throw new BusinessRuleException("Erro ao buscar cliente: " + e.getMessage());
         }
     }
 }
