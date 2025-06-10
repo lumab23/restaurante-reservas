@@ -56,7 +56,7 @@ public class ClienteDAO implements ClienteRepository {
     public Optional<Cliente> buscarPorId(int idCliente) throws SQLException {
         try {
             String sql = "SELECT * FROM cliente WHERE id_cliente = ?";
-            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+            List<Cliente> resultados = jdbcTemplate.query(sql, (rs, rowNum) -> {
                 Cliente cliente = new Cliente();
                 cliente.setId(rs.getInt("id_cliente"));
                 cliente.setNome(rs.getString("nome"));
@@ -67,7 +67,9 @@ public class ClienteDAO implements ClienteRepository {
                     cliente.setDataNascimento(dataNascimento.toLocalDate());
                 }
                 return cliente;
-            }, idCliente));
+            }, idCliente);
+
+            return resultados.isEmpty() ? Optional.empty() : Optional.of(resultados.get(0));
         } catch (Exception e) {
             log.error("Erro ao buscar cliente por ID: {}", idCliente, e);
             throw new SQLException("Erro ao buscar cliente: " + e.getMessage());

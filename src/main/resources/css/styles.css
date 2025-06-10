@@ -197,98 +197,23 @@
     -fx-background-color: #e3f2fd;
 }
 
-/* Estilo para o DatePicker */
-.date-picker .text-field {
-    -fx-text-fill: #2c3e50;
-}
-
-.date-picker .arrow-button {
-    -fx-background-color: #f5f5f5;
-}
-
-.date-picker .arrow {
-    -fx-background-color: #757575;
-}
-
-/* Estilo para o Spinner */
-.spinner .increment-arrow-button,
-.spinner .decrement-arrow-button {
-    -fx-background-color: #f5f5f5;
-}
-
-.spinner .increment-arrow,
-.spinner .decrement-arrow {
-    -fx-background-color: #757575;
-}
-
-/* Estilo para o campo de número do cartão */
-#numeroCartaoField {
-    -fx-font-family: monospace;
-    -fx-font-size: 16px;
-    -fx-letter-spacing: 1px;
-}
-
-/* Estilo para o campo de CVV */
-#cvvField {
-    -fx-font-family: monospace;
-    -fx-font-size: 16px;
-    -fx-letter-spacing: 2px;
-}
-
-/* Estilo para o campo de validade */
-#validadeField {
-    -fx-font-family: monospace;
-    -fx-font-size: 16px;
-    -fx-letter-spacing: 1px;
-}
-
-/* Estilo específico para o Spinner */
-.spinner {
-    -fx-background-color: white;
-    -fx-border-color: #e0e0e0;
-    -fx-border-radius: 6px;
-    -fx-padding: 0;
-}
-
-.spinner .increment-arrow-button,
-.spinner .decrement-arrow-button {
-    -fx-background-color: #f5f5f5;
-    -fx-border-color: #e0e0e0;
-    -fx-border-radius: 0;
-}
-
-.spinner .increment-arrow-button:hover,
-.spinner .decrement-arrow-button:hover {
-    -fx-background-color: #e0e0e0;
-}
-
-.spinner .increment-arrow,
-.spinner .decrement-arrow {
-    -fx-background-color: #757575;
-}
-
-/* Estilo específico para o DatePicker */
+/* Estilo simplificado para o DatePicker */
 .date-picker {
+    -fx-font-size: 14px;
     -fx-background-color: white;
-    -fx-border-color: #e0e0e0;
-    -fx-border-radius: 6px;
 }
 
 .date-picker .text-field {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
+    -fx-font-size: 14px;
+    -fx-background-color: white;
     -fx-padding: 8px 12px;
-    -fx-text-fill: #2c3e50;
 }
 
 .date-picker .arrow-button {
     -fx-background-color: #f5f5f5;
     -fx-border-color: #e0e0e0;
-    -fx-border-radius: 0 6px 6px 0;
-}
-
-.date-picker .arrow-button:hover {
-    -fx-background-color: #e0e0e0;
+    -fx-font-size: 14px;
+    -fx-padding: 8px;
 }
 
 .date-picker .arrow {
@@ -296,57 +221,55 @@
 }
 
 .date-picker-popup {
+    -fx-font-size: 14px;
     -fx-background-color: white;
     -fx-border-color: #e0e0e0;
     -fx-border-radius: 6px;
-    -fx-background-radius: 6px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);
 }
 
 .date-picker-popup .month-year-pane {
     -fx-background-color: #f5f5f5;
-    -fx-text-fill: #2c3e50;
+    -fx-font-size: 14px;
+    -fx-padding: 5px;
 }
 
 .date-picker-popup .month-year-pane .label {
-    -fx-text-fill: #2c3e50;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
 }
 
-.date-picker-popup .spinner .button {
+.date-picker-popup .spinner {
+    -fx-font-size: 14px;
+    -fx-background-color: transparent;
+}
+
+.date-picker-popup .spinner .increment-arrow-button,
+.date-picker-popup .spinner .decrement-arrow-button {
+    -fx-font-size: 14px;
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 }
 
-.date-picker-popup .spinner .button:hover {
-    -fx-background-color: #e0e0e0;
-}
-
-.date-picker-popup .spinner .button .arrow {
-    -fx-background-color: #757575;
-}
-
 .date-picker-popup .calendar-grid {
     -fx-background-color: white;
+    -fx-font-size: 14px;
+    -fx-padding: 5px;
 }
 
 .date-picker-popup .calendar-grid .day-cell {
     -fx-text-fill: #2c3e50;
+    -fx-font-size: 14px;
+    -fx-background-color: transparent;
 }
 
 .date-picker-popup .calendar-grid .day-cell:hover {
-    -fx-background-color: #f5f5f5;
+    -fx-background-color: #e0e0e0;
 }
 
 .date-picker-popup .calendar-grid .day-cell:selected {
-    -fx-background-color: #2196F3;
+    -fx-background-color: #3498db;
     -fx-text-fill: white;
-}
-
-.date-picker-popup .calendar-grid .day-cell.today {
-    -fx-background-color: #e3f2fd;
-    -fx-text-fill: #2196F3;
-    -fx-font-weight: bold;
 }
 
 /* Estilo específico para o ComboBox */

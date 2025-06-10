@@ -15,7 +15,6 @@ import java.sql.Statement;
 
 /**
  * Classe para limpar e recriar os dados dos admins corretamente
- * Execute uma vez para corrigir o problema
  */
 @Component
 @Order(1) // Execute antes do seeder

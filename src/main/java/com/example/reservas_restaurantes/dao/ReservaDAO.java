@@ -287,15 +287,12 @@ public class ReservaDAO implements ReservaRepository {
 
     @Override
     public List<Reserva> buscarPorMesaEPeriodo(int idMesa, LocalDateTime inicioPeriodoProposto, LocalDateTime fimPeriodoProposto, Integer idReservaExcluir) throws SQLException {
-        String duracaoReservaSQL = "02:00:00"; // Assumindo uma duração padrão de 2 horas para todas as reservas
-
         StringBuilder sql = new StringBuilder(
             "SELECT id_reserva, id_cliente, id_mesa, dataHora, numPessoas, ocasiao, statusReserva, observacao " +
             "FROM Reserva " +
             "WHERE id_mesa = ? " +
             "  AND statusReserva != 'CANCELADA' " +
-            "  AND dataHora < ? " +
-            "  AND ADDTIME(dataHora, ?) > ?"
+            "  AND dataHora BETWEEN ? AND ?"
         );
 
         if (idReservaExcluir != null) {
@@ -310,15 +307,12 @@ public class ReservaDAO implements ReservaRepository {
         try {
             connection = getConnection();
             statement = connection.prepareStatement(sql.toString());
-
-            int paramIndex = 1;
-            statement.setInt(paramIndex++, idMesa);
-            statement.setTimestamp(paramIndex++, Timestamp.valueOf(fimPeriodoProposto));
-            statement.setString(paramIndex++, duracaoReservaSQL);
-            statement.setTimestamp(paramIndex++, Timestamp.valueOf(inicioPeriodoProposto));
+            statement.setInt(1, idMesa);
+            statement.setTimestamp(2, Timestamp.valueOf(inicioPeriodoProposto));
+            statement.setTimestamp(3, Timestamp.valueOf(fimPeriodoProposto));
             
             if (idReservaExcluir != null) {
-                statement.setInt(paramIndex, idReservaExcluir);
+                statement.setInt(4, idReservaExcluir);
             }
 
             rs = statement.executeQuery();
@@ -335,7 +329,7 @@ public class ReservaDAO implements ReservaRepository {
                 reservasConflitantes.add(reserva);
             }
         } catch (SQLException e) {
-            System.err.println("Erro ao buscar reservas conflitantes por mesa e período: " + e.getMessage());
+            System.err.println("Erro ao buscar reservas conflitantes: " + e.getMessage());
             throw e;
         } finally {
             if (rs != null) rs.close();

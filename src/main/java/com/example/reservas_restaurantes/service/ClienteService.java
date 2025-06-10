@@ -105,8 +105,15 @@ public class ClienteService {
 
     @Transactional
     public void deletarCliente(int id) throws BusinessRuleException {
-        buscarClientePorId(id);
         try {
+            // Verificar se o cliente ainda existe antes de tentar deletar
+            Optional<Cliente> clienteOpt = clienteRepository.buscarPorId(id);
+            if (clienteOpt.isEmpty()) {
+                // Se o cliente não existe, não é um erro - apenas retorna silenciosamente
+                return;
+            }
+            
+            // Se chegou aqui, o cliente existe e pode ser deletado
             clienteRepository.deletar(id);
         } catch (SQLException e) {
             throw new BusinessRuleException("Erro ao deletar cliente: " + e.getMessage(), e);

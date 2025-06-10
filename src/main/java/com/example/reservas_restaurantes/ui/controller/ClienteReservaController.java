@@ -1,5 +1,6 @@
 package com.example.reservas_restaurantes.ui.controller;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -8,6 +9,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
+import javafx.stage.StageStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -64,11 +68,24 @@ public class ClienteReservaController {
     
     @FXML
     private void initialize() {
-        setupUI();
-        setupValidation();
+        Platform.runLater(() -> {
+            setupUI();
+            setupValidation();
+        });
     }
     
     private void setupUI() {
+        // Configurar DatePickers com estilo seguro
+        dpDataNascimento.setPromptText("Selecione a data");
+        dpDataNascimento.setStyle("-fx-font-size: 14px;");
+        dpDataNascimento.setShowWeekNumbers(false);
+        dpDataNascimento.setEditable(false);
+        
+        dpDataReserva.setPromptText("Selecione a data");
+        dpDataReserva.setStyle("-fx-font-size: 14px;");
+        dpDataReserva.setShowWeekNumbers(false);
+        dpDataReserva.setEditable(false);
+        
         // Configurar horários disponíveis
         cbHorario.setItems(FXCollections.observableArrayList(
             "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00"

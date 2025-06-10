@@ -481,19 +481,25 @@ public class AdminDashboardController {
                     System.out.println("Reserva ID " + reserva.getIdReserva() + " deletada com sucesso");
                 } catch (Exception e) {
                     System.err.println("Erro ao deletar reserva ID " + reserva.getIdReserva() + ": " + e.getMessage());
+                    // Continua tentando deletar as outras reservas mesmo se uma falhar
                 }
             }
 
-            // Depois deleta o cliente
-            clienteService.deletarCliente(cliente.getIdCliente());
-            System.out.println("Cliente ID " + cliente.getIdCliente() + " deletado com sucesso");
+            // Depois tenta deletar o cliente
+            try {
+                clienteService.deletarCliente(cliente.getIdCliente());
+                System.out.println("Cliente ID " + cliente.getIdCliente() + " deletado com sucesso");
+                mostrarAlerta("Sucesso", "Cliente e suas reservas foram deletados com sucesso.", Alert.AlertType.INFORMATION);
+            } catch (BusinessRuleException e) {
+                // Se o cliente já foi deletado, não é um erro
+                System.out.println("Cliente ID " + cliente.getIdCliente() + " já foi deletado");
+                mostrarAlerta("Aviso", "O cliente já foi deletado por outra operação.", Alert.AlertType.WARNING);
+            }
 
-            // Atualizar as tabelas
+            // Atualizar as tabelas independentemente do resultado
             carregarReservas();
             carregarClientes();
             atualizarEstatisticas();
-
-            mostrarAlerta("Sucesso", "Cliente e suas reservas foram deletados com sucesso.", Alert.AlertType.INFORMATION);
         } catch (Exception e) {
             mostrarAlerta("Erro", "Erro ao deletar cliente: " + e.getMessage(), Alert.AlertType.ERROR);
         }

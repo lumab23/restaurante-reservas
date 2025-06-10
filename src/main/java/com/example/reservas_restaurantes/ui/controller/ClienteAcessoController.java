@@ -110,38 +110,46 @@ public class ClienteAcessoController {
 
     private void setupTelefoneValidation() {
         txtTelefone.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue == null) return;
-            
-            // Remove todos os caracteres não numéricos
-            String numeros = newValue.replaceAll("[^0-9]", "");
+            if (newValue == null) {
+                txtTelefone.setText("");
+                return;
+            }
             
             // Se o usuário está apagando, permite a ação
             if (newValue.length() < oldValue.length()) {
                 return;
             }
             
-            // Formata o número no padrão (XX) XXXXX-XXXX
-            if (numeros.length() <= 11) {
-                StringBuilder formatado = new StringBuilder();
-                if (numeros.length() > 0) {
-                    formatado.append("(");
-                    formatado.append(numeros.substring(0, Math.min(2, numeros.length())));
-                    if (numeros.length() > 2) {
-                        formatado.append(") ");
-                        formatado.append(numeros.substring(2, Math.min(7, numeros.length())));
-                        if (numeros.length() > 7) {
-                            formatado.append("-");
-                            formatado.append(numeros.substring(7, Math.min(11, numeros.length())));
-                        }
+            // Remove todos os caracteres não numéricos
+            String digits = newValue.replaceAll("\\D", "");
+            
+            // Limita a 11 dígitos (DDD + número)
+            if (digits.length() > 11) {
+                digits = digits.substring(0, 11);
+            }
+            
+            // Formata o número apenas se houver dígitos
+            if (!digits.isEmpty()) {
+                StringBuilder formatted = new StringBuilder();
+                formatted.append("(");
+                formatted.append(digits.substring(0, Math.min(2, digits.length())));
+                
+                if (digits.length() > 2) {
+                    formatted.append(") ");
+                    formatted.append(digits.substring(2, Math.min(7, digits.length())));
+                    
+                    if (digits.length() > 7) {
+                        formatted.append("-");
+                        formatted.append(digits.substring(7));
                     }
                 }
                 
-                // Só atualiza se o valor for diferente para evitar loop infinito
-                String textoFormatado = formatado.toString();
-                if (!textoFormatado.equals(newValue)) {
-                    txtTelefone.setText(textoFormatado);
-                    // Move o cursor para o final
-                    txtTelefone.positionCaret(textoFormatado.length());
+                // Atualiza o texto apenas se for diferente para evitar loop infinito
+                String formattedText = formatted.toString();
+                if (!formattedText.equals(newValue)) {
+                    txtTelefone.setText(formattedText);
+                    // Posiciona o cursor no final
+                    txtTelefone.positionCaret(formattedText.length());
                 }
             }
         });
