@@ -9,9 +9,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.stage.Window;
-import javafx.stage.WindowEvent;
-import javafx.stage.StageStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +25,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -62,6 +60,9 @@ public class ClienteReservaController {
     
     private MainController mainController;
     
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+    
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
     }
@@ -76,15 +77,17 @@ public class ClienteReservaController {
     
     private void setupUI() {
         // Configurar DatePickers com estilo seguro
-        dpDataNascimento.setPromptText("Selecione a data");
+        dpDataNascimento.setPromptText("DD/MM/AAAA");
         dpDataNascimento.setStyle("-fx-font-size: 14px;");
         dpDataNascimento.setShowWeekNumbers(false);
         dpDataNascimento.setEditable(false);
+        dpDataNascimento.setFocusTraversable(false);
         
-        dpDataReserva.setPromptText("Selecione a data");
+        dpDataReserva.setPromptText("DD/MM/AAAA");
         dpDataReserva.setStyle("-fx-font-size: 14px;");
         dpDataReserva.setShowWeekNumbers(false);
         dpDataReserva.setEditable(false);
+        dpDataReserva.setFocusTraversable(false);
         
         // Configurar horários disponíveis
         cbHorario.setItems(FXCollections.observableArrayList(
@@ -179,6 +182,13 @@ public class ClienteReservaController {
             if (newVal.length() < oldVal.length()) {
                 return;
             }
+
+            // Verificar se contém letras
+            if (newVal.matches(".*[a-zA-Z].*")) {
+                mostrarAlerta("Validação", "Somente números são permitidos no telefone", Alert.AlertType.WARNING);
+                txtTelefone.setText(oldVal);
+                return;
+            }
             
             // Remove todos os caracteres não numéricos
             String digits = newVal.replaceAll("\\D", "");
@@ -211,6 +221,19 @@ public class ClienteReservaController {
                     // Posiciona o cursor no final
                     txtTelefone.positionCaret(formattedText.length());
                 }
+            }
+        });
+
+        // Validação de email
+        txtEmail.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.isEmpty()) {
+                if (!newVal.contains("@") || (!newVal.endsWith(".com") && !newVal.endsWith(".br"))) {
+                    txtEmail.setStyle("-fx-border-color: red;");
+                } else {
+                    txtEmail.setStyle("");
+                }
+            } else {
+                txtEmail.setStyle("");
             }
         });
     }
@@ -335,8 +358,8 @@ public class ClienteReservaController {
             mostrarAlerta("Sucesso", 
                 "Reserva confirmada com sucesso!\n" +
                 "ID da Reserva: " + reserva.getIdReserva() + "\n" +
-                "Data: " + reserva.getDataHora().toLocalDate() + "\n" +
-                "Horário: " + reserva.getDataHora().toLocalTime() + "\n" +
+                "Data: " + reserva.getDataHora().toLocalDate().format(DATE_FORMATTER) + "\n" +
+                "Horário: " + reserva.getDataHora().toLocalTime().format(TIME_FORMATTER) + "\n" +
                 "Mesa: " + reserva.getIdMesa(),
                 Alert.AlertType.INFORMATION);
             voltarInicio();
@@ -356,9 +379,21 @@ public class ClienteReservaController {
             mostrarAlerta("Validação", "Por favor, informe seu telefone.", Alert.AlertType.WARNING);
             return false;
         }
+
+        // Validar formato do telefone
+        if (!txtTelefone.getText().matches("^\\(\\d{2}\\) \\d{5}-\\d{4}$")) {
+            mostrarAlerta("Validação", "Telefone deve estar no formato (XX) XXXXX-XXXX", Alert.AlertType.WARNING);
+            return false;
+        }
         
         if (txtEmail.getText().trim().isEmpty()) {
             mostrarAlerta("Validação", "Por favor, informe seu email.", Alert.AlertType.WARNING);
+            return false;
+        }
+
+        // Validar formato do email
+        if (!txtEmail.getText().contains("@") || (!txtEmail.getText().endsWith(".com") && !txtEmail.getText().endsWith(".br"))) {
+            txtEmail.setStyle("-fx-border-color: red;");
             return false;
         }
         
@@ -415,6 +450,13 @@ public class ClienteReservaController {
         alert.setTitle(titulo);
         alert.setHeaderText(null);
         alert.setContentText(mensagem);
+        
+        if (tipo == Alert.AlertType.CONFIRMATION) {
+            ButtonType buttonTypeSim = new ButtonType("Sim", ButtonBar.ButtonData.YES);
+            ButtonType buttonTypeNao = new ButtonType("Não", ButtonBar.ButtonData.NO);
+            alert.getButtonTypes().setAll(buttonTypeSim, buttonTypeNao);
+        }
+        
         alert.showAndWait();
     }
     

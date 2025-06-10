@@ -1,6 +1,7 @@
 package com.example.reservas_restaurantes.model;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import com.example.reservas_restaurantes.enums.StatusReserva;
 import com.example.reservas_restaurantes.enums.TipoOcasiao;
@@ -15,6 +16,8 @@ public class Reserva {
     private StatusReserva statusReserva;
     private String observacao;
     private boolean isNewReservation = true; // Flag para controlar se é uma nova reserva
+
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public Reserva() {
         this.isNewReservation = false; // Construtor vazio é usado para leitura
@@ -121,15 +124,11 @@ public class Reserva {
 
     @Override
     public String toString() {
-        return "Reserva{" +
-                "idReserva=" + idReserva +
-                ", idCliente=" + idCliente +
-                ", idMesa=" + idMesa +
-                ", dataHora=" + dataHora +
-                ", numPessoas=" + numPessoas +
-                ", ocasiao=" + ocasiao +
-                ", statusReserva=" + statusReserva +
-                ", observacao='" + observacao + '\'' +
-                '}';
+        return String.format("Reserva #%d - Mesa %d - %s - %d pessoas - %s",
+            idReserva,
+            idMesa,
+            dataHora.format(DATETIME_FORMATTER),
+            numPessoas,
+            statusReserva);
     }
 } 

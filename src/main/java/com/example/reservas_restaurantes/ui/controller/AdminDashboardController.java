@@ -78,6 +78,10 @@ public class AdminDashboardController {
     
     private MainController mainController;
     
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    
     @FXML
     private void initialize() {
         setupTables();
@@ -99,7 +103,7 @@ public class AdminDashboardController {
         colIdMesaReserva.setCellValueFactory(new PropertyValueFactory<>("idMesa"));
         colDataHora.setCellValueFactory(cellData -> 
             javafx.beans.binding.Bindings.createStringBinding(() -> 
-                cellData.getValue().getDataHora().toString()));
+                cellData.getValue().getDataHora().format(DATETIME_FORMATTER)));
         colNumPessoas.setCellValueFactory(new PropertyValueFactory<>("numPessoas"));
         colStatus.setCellValueFactory(cellData -> 
             javafx.beans.binding.Bindings.createStringBinding(() -> 
@@ -134,7 +138,7 @@ public class AdminDashboardController {
                 
                 String horarios = reservas.stream()
                     .filter(r -> r.getStatusReserva() != StatusReserva.CANCELADA)
-                    .map(r -> r.getDataHora().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")))
+                    .map(r -> r.getDataHora().toLocalTime().format(TIME_FORMATTER))
                     .collect(Collectors.joining(", "));
                 
                 return javafx.beans.binding.Bindings.createStringBinding(() -> horarios);
@@ -158,7 +162,7 @@ public class AdminDashboardController {
                 String observacoes = reservas.stream()
                     .filter(r -> r.getStatusReserva() != StatusReserva.CANCELADA && r.getObservacao() != null && !r.getObservacao().trim().isEmpty())
                     .map(r -> String.format("%s: %s", 
-                        r.getDataHora().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                        r.getDataHora().toLocalTime().format(TIME_FORMATTER),
                         r.getObservacao()))
                     .collect(Collectors.joining("\n"));
                 
@@ -317,7 +321,7 @@ public class AdminDashboardController {
             tableMesas.setItems(FXCollections.observableArrayList(mesas));
             
             // Atualizar o título da coluna de status para mostrar a data
-            colStatusMesa.setText("Status (" + dataFiltro.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ")");
+            colStatusMesa.setText("Status (" + dataFiltro.format(DATE_FORMATTER) + ")");
             
         } catch (Exception e) {
             mostrarAlerta("Erro", "Erro ao carregar mesas: " + e.getMessage(), Alert.AlertType.ERROR);
@@ -327,16 +331,10 @@ public class AdminDashboardController {
     @FXML
     private void filtrarReservasPorData() {
         LocalDate dataFiltro = dpFiltroData.getValue();
-        if (dataFiltro == null) {
-            carregarReservas();
-            return;
-        }
-        
-        try {
+        if (dataFiltro != null) {
             List<Reserva> reservas = reservaService.listarReservasPorData(dataFiltro);
             tableReservas.setItems(FXCollections.observableArrayList(reservas));
-        } catch (Exception e) {
-            mostrarAlerta("Erro", "Erro ao filtrar reservas: " + e.getMessage(), Alert.AlertType.ERROR);
+            colStatusMesa.setText("Status (" + dataFiltro.format(DATE_FORMATTER) + ")");
         }
     }
     
@@ -441,12 +439,14 @@ public class AdminDashboardController {
                 
                 mensagem.append("\nDeseja deletar o cliente e todas as suas reservas?");
                 
-                Alert confirmacao = new Alert(Alert.AlertType.CONFIRMATION, mensagem.toString(), ButtonType.YES, ButtonType.NO);
+                Alert confirmacao = new Alert(Alert.AlertType.CONFIRMATION, mensagem.toString(), 
+                    new ButtonType("Sim", ButtonBar.ButtonData.YES),
+                    new ButtonType("Não", ButtonBar.ButtonData.NO));
                 confirmacao.setTitle("Confirmar Deleção");
                 confirmacao.setHeaderText("Cliente possui reservas ativas");
                 
                 confirmacao.showAndWait().ifPresent(response -> {
-                    if (response == ButtonType.YES) {
+                    if (response.getButtonData() == ButtonBar.ButtonData.YES) {
                         deletarClienteEReservas(clienteSelecionado, reservasCliente);
                     }
                 });
@@ -454,12 +454,13 @@ public class AdminDashboardController {
                 // Se não tiver reservas, apenas confirma a deleção
                 Alert confirmacao = new Alert(Alert.AlertType.CONFIRMATION, 
                     "Tem certeza que deseja deletar o cliente selecionado?", 
-                    ButtonType.YES, ButtonType.NO);
+                    new ButtonType("Sim", ButtonBar.ButtonData.YES),
+                    new ButtonType("Não", ButtonBar.ButtonData.NO));
                 confirmacao.setTitle("Confirmar Deleção");
                 confirmacao.setHeaderText("Deletar Cliente: " + clienteSelecionado.getNome());
                 
                 confirmacao.showAndWait().ifPresent(response -> {
-                    if (response == ButtonType.YES) {
+                    if (response.getButtonData() == ButtonBar.ButtonData.YES) {
                         deletarClienteEReservas(clienteSelecionado, List.of());
                     }
                 });

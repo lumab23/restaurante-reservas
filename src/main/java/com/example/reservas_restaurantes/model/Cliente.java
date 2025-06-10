@@ -1,6 +1,7 @@
 package com.example.reservas_restaurantes.model;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.regex.Pattern;
 
 public class Cliente extends Pessoa {
@@ -8,6 +9,7 @@ public class Cliente extends Pessoa {
     private LocalDate dataNascimento;
 
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\(\\d{2}\\) \\d{5}-\\d{4}$");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private boolean isNewClient = true;
 
@@ -61,7 +63,10 @@ public class Cliente extends Pessoa {
 
     @Override
     public String toString() {
-        return "Cliente [idCliente=" + getId() + ", nome=" + getNome() + ", telefone=" + telefone + ", email=" + getEmail()
-                + ", dataNascimento=" + dataNascimento + "]";
+        return String.format("%s (Nasc: %s) - Tel: %s - Email: %s",
+            getNome(),
+            dataNascimento != null ? dataNascimento.format(DATE_FORMATTER) : "N/A",
+            telefone,
+            getEmail());
     }
 } 

@@ -1,11 +1,13 @@
 package com.example.reservas_restaurantes.model;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Pedido {
     private int idPedido;
     private int idReserva; // fk para reserva
     private LocalDateTime dataHora;
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public Pedido() {
     }
@@ -53,10 +55,9 @@ public class Pedido {
 
     @Override
     public String toString() {
-        return "Pedido{" +
-                "idPedido=" + idPedido +
-                ", idReserva=" + idReserva +
-                ", dataHora=" + dataHora +
-                '}';
+        return String.format("Pedido #%d - Reserva #%d - %s",
+            idPedido,
+            idReserva,
+            dataHora.format(DATETIME_FORMATTER));
     }
 }

@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javafx.stage.Stage;
 import com.example.reservas_restaurantes.utils.WindowUtils;
+import java.time.format.DateTimeFormatter;
 
 @Component
 public class ClienteAcessoController {
@@ -35,6 +36,7 @@ public class ClienteAcessoController {
     @FXML private TableColumn<Reserva, String> colStatus;
     @FXML private TableColumn<Reserva, Void> colAcoes;
     @FXML private Label lblMensagem;
+    @FXML private DatePicker dpFiltroData;
 
     @Autowired
     private ClienteService clienteService;
@@ -43,10 +45,14 @@ public class ClienteAcessoController {
 
     private MainController mainController;
 
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
     @FXML
     private void initialize() {
         setupTable();
         setupTelefoneValidation();
+        setupEmailValidation();
+        setupDatePickers();
     }
 
     public void setMainController(MainController mainController) {
@@ -57,7 +63,7 @@ public class ClienteAcessoController {
         colIdReserva.setCellValueFactory(new PropertyValueFactory<>("idReserva"));
         colDataHora.setCellValueFactory(cellData -> 
             javafx.beans.binding.Bindings.createStringBinding(() -> 
-                cellData.getValue().getDataHora().toString()));
+                cellData.getValue().getDataHora().format(DATETIME_FORMATTER)));
         colNumPessoas.setCellValueFactory(new PropertyValueFactory<>("numPessoas"));
         colStatus.setCellValueFactory(cellData -> 
             javafx.beans.binding.Bindings.createStringBinding(() -> 
@@ -119,6 +125,17 @@ public class ClienteAcessoController {
             if (newValue.length() < oldValue.length()) {
                 return;
             }
+
+            // Verificar se contém letras
+            if (newValue.matches(".*[a-zA-Z].*")) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Validação");
+                alert.setHeaderText(null);
+                alert.setContentText("Somente números são permitidos no telefone");
+                alert.showAndWait();
+                txtTelefone.setText(oldValue);
+                return;
+            }
             
             // Remove todos os caracteres não numéricos
             String digits = newValue.replaceAll("\\D", "");
@@ -153,6 +170,30 @@ public class ClienteAcessoController {
                 }
             }
         });
+    }
+
+    private void setupEmailValidation() {
+        txtEmail.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.isEmpty()) {
+                if (!newVal.contains("@") || (!newVal.endsWith(".com") && !newVal.endsWith(".br"))) {
+                    txtEmail.setStyle("-fx-border-color: red;");
+                } else {
+                    txtEmail.setStyle("");
+                }
+            } else {
+                txtEmail.setStyle("");
+            }
+        });
+    }
+
+    private void setupDatePickers() {
+        if (dpFiltroData != null) {
+            dpFiltroData.setPromptText("DD/MM/AAAA");
+            dpFiltroData.setStyle("-fx-font-size: 14px;");
+            dpFiltroData.setShowWeekNumbers(false);
+            dpFiltroData.setEditable(false);
+            dpFiltroData.setFocusTraversable(false);
+        }
     }
 
     @FXML
